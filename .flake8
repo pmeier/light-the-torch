@@ -1,0 +1,24 @@
+[flake8]
+# See link below for available options
+# https://flake8.pycqa.org/en/latest/user/options.html#options-and-their-descriptions
+# Move this to pyproject.toml as soon as it is supported.
+# See https://gitlab.com/pycqa/flake8/issues/428
+
+exclude =
+    .git,
+    .github,
+    .venv,
+    .eggs,
+    .mypy_cache,
+    .pytest_cache,
+    .tox,
+    __pycache__,
+    *.pyc,
+    docs/build,
+ignore = E203, E501, W503
+max-line-length = 88
+per-file-ignores =
+    __init__.py: F401, F403, F405
+    conftest.py: F401, F403, F405
+show_source = True
+statistics = True

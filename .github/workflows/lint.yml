@@ -1,0 +1,39 @@
+name: lint
+
+on:
+  push:
+    branches:
+      - master
+      - releases/*
+
+  pull_request:
+    paths:
+      - "**.py"
+      - "pyproject.toml"
+      - ".flake8"
+      - "mypy.ini"
+      - "tox.ini"
+      - "requirements-dev.txt"
+      - ".github/workflows/lint.yml"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.6"
+
+      - name: Upgrade and install additional system packages
+        run: pip install --upgrade pip setuptools virtualenv wheel
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install dev requirements
+        run: pip install -r requirements-dev.txt
+
+      - name: Run lint
+        run: tox -e lint

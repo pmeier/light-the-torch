@@ -1,0 +1,55 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - master
+      - releases/*
+
+  pull_request:
+    paths:
+      - "ltt/**"
+      - "tests/**"
+      - "setup.py"
+      - "pytest.ini"
+      - "tox.ini"
+      - ".coveragerc"
+      - "codecov.yml"
+      - "requirements-dev.txt"
+      - ".github/workflows/tests.yml"
+
+jobs:
+  run:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ['3.6', '3.7', '3.8']
+      fail-fast: true
+
+    runs-on: ${{ matrix.os }}
+    env:
+      OS: ${{ matrix.os }}
+      PYTHON: ${{ matrix.python }}
+
+    steps:
+      - name: Set up python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Upgrade and install additional system packages
+        run: pip install --upgrade pip setuptools virtualenv wheel
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install dev requirements
+        run: pip install -r requirements-dev.txt
+
+      - name: Run tests
+        run: tox -e py -- --skip-large-download
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v1.0.7
+        with:
+          env_vars: OS,PYTHON

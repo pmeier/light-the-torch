@@ -1,0 +1,38 @@
+name: publish
+
+on:
+  push:
+    branches:
+      - releases/*
+
+jobs:
+  pypi:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.6"
+
+      - name: Upgrade and install additional system packages
+        run: pip install --upgrade pip setuptools virtualenv wheel
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install pep517 and twine
+        run: pip install pep517 twine
+
+      - name: Build source and binary
+        run: python -m pep517.build --source --binary .
+
+      - name: Check README
+        run: twine check dist/*
+
+      - name: Upload to TestPyPI
+        env:
+          TWINE_REPOSITORY: testpypi
+          TWINE_USERNAME: ${{ secrets.TESTPYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.TESTPYPI_PASSWORD }}
+        run: twine upload dist/*
