@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 
 import ltt
@@ -28,14 +30,48 @@ def test_PytorchCandidatePreferences_detect_computation_backend(mocker):
     assert candidate_prefs.computation_backend is computation_backend
 
 
-@pytest.mark.slow
-def test_find_links_smoke(subtests):
-    computation_backends = [
+@pytest.fixture
+def computation_backends():
+    return [
         cb.ComputationBackend.from_str(string)
         for string in ("cpu", "cu92", "cu101", "cu102")
     ]
-    dists = ["torch", "torchaudio", "torchtext", "torchvision"]
+
+
+@pytest.mark.slow
+def test_find_links_torch_smoke(subtests, computation_backends):
+    dist = "torch"
+
     for computation_backend in computation_backends:
         with subtests.test(computation_backend=computation_backend):
-            links = ltt.find_links(dists, computation_backend=computation_backend)
-            assert len(links) == len(dists)
+            assert ltt.find_links([dist], computation_backend=computation_backend)
+
+
+@pytest.mark.slow
+@pytest.mark.skipif(
+    sys.platform.startswith("win"), reason="torchaudio has no releases for Windows"
+)
+def test_find_links_torchaudio_smoke(subtests, computation_backends):
+    dist = "torchaudio"
+
+    for computation_backend in computation_backends:
+        with subtests.test(computation_backend=computation_backend):
+            assert ltt.find_links([dist], computation_backend=computation_backend)
+
+
+@pytest.mark.slow
+def test_find_links_torchtext_smoke(subtests, computation_backends):
+    dist = "torchtext"
+
+    for computation_backend in computation_backends:
+        with subtests.test(computation_backend=computation_backend):
+            assert ltt.find_links([dist], computation_backend=computation_backend)
+
+
+@pytest.mark.slow
+def test_find_links_torchvision_smoke(subtests, computation_backends):
+    dist = "torchvision"
+
+    for computation_backend in computation_backends:
+        with subtests.test(computation_backend=computation_backend):
+            assert ltt.find_links([dist], computation_backend=computation_backend)
