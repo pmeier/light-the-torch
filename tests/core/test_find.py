@@ -32,10 +32,10 @@ def test_PytorchCandidatePreferences_detect_computation_backend(mocker):
 
 @pytest.fixture
 def computation_backends():
-    return [
-        cb.ComputationBackend.from_str(string)
-        for string in ("cpu", "cu92", "cu101", "cu102")
-    ]
+    strings = ["cpu"]
+    if sys.platform.startswith("linux") or sys.platform.startswith("win"):
+        strings.extend(("cu92", "cu101", "cu102"))
+    return [cb.ComputationBackend.from_str(string) for string in strings]
 
 
 @pytest.mark.slow
