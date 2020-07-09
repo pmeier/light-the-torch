@@ -20,11 +20,10 @@ def test_StopAfterPytorchDistsFoundResolver_no_torch(mocker):
 
 
 # @pytest.mark.slow
-# def test_resolve_dists_lighter():
+# def test_resolve_dists_ltt():
 #     assert ltt.resolve_dists(["ltt"]) == []
 
 
-@pytest.mark.large_download
 @pytest.mark.slow
 def test_resolve_dists_pystiche(subtests):
     pystiche = "git+https://github.com/pmeier/pystiche@v{}"
@@ -37,7 +36,6 @@ def test_resolve_dists_pystiche(subtests):
             assert set(ltt.resolve_dists([req])) == dists
 
 
-@pytest.mark.large_download
 @pytest.mark.slow
 def test_resolve_dists_kornia(subtests):
     kornia = "kornia=={}"
