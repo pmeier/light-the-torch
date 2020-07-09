@@ -27,7 +27,6 @@ skip = [
   ".pytest_cache",
   ".tox",
   "__pycache__",
-  "docs/build",
 ]
 line_length = 88
 use_parentheses = true
@@ -55,6 +54,5 @@ exclude = '''
   | \.pytest_cache
   | \.tox
   | __pycache__
-  | docs/build
 )/
 '''

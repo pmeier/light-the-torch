@@ -14,13 +14,8 @@ Install PyTorch distributions with autodetected computation backend
       - |black| |mypy| |lint|
     * - tests
       - |tests| |coverage|
-    * - docs
-      - |docs| |rtd|
 
 .. end-badges
-
-For installation instructions and usage examples please consult the documentation
-`hosted on readthedocs.com <https://light-the-torch.readthedocs.io/en/latest>`_ .
 
 .. |license|
   image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
@@ -56,13 +51,3 @@ For installation instructions and usage examples please consult the documentatio
   image:: https://codecov.io/gh/pmeier/ltt/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/pmeier/ltt
     :alt: Test coverage via codecov.io
-
-.. |docs|
-  image:: https://github.com/pmeier/light-the-torch/workflows/docs/badge.svg
-    :target: https://github.com/pmeier/light-the-torch/actions?query=workflow%3Adocs+branch%3Amaster
-    :alt: Docs status via GitHub Actions
-
-.. |rtd|
-  image:: https://img.shields.io/readthedocs/light-the-torch?label=latest&logo=read%20the%20docs
-    :target: https://light-the-torch.readthedocs.io/en/latest/?badge=latest
-    :alt: Latest documentation hosted on Read the Docs
