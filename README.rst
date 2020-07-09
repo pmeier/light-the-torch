@@ -208,6 +208,6 @@ autodetection:
     :alt: Test status via GitHub Actions
 
 .. |coverage|
-  image:: https://codecov.io/gh/pmeier/ltt/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/pmeier/ltt
+  image:: https://codecov.io/gh/pmeier/light-the-torch/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/pmeier/light-the-torch
     :alt: Test coverage via codecov.io
