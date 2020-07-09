@@ -27,7 +27,7 @@ skip = [
   ".pytest_cache",
   ".tox",
   "__pycache__",
-  "docs/build",
+  "ltt/__init__.py",
 ]
 line_length = 88
 use_parentheses = true
@@ -35,7 +35,6 @@ multi_line_output = 3
 force_grid_wrap = 0
 include_trailing_comma = true
 
-known_standard_library = ["setuptools", "typing_extensions"]
 known_third_party = ["pytest"]
 known_first_party = ["ltt"]
 
@@ -55,6 +54,5 @@ exclude = '''
   | \.pytest_cache
   | \.tox
   | __pycache__
-  | docs/build
 )/
 '''

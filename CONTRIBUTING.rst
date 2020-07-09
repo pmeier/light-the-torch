@@ -87,14 +87,3 @@ You can run it locally with
 
     cd $LTT_ROOT
     tox -- --skip-large-download
-
-
-Documentation
--------------
-
-To build the html and latex documentation locally, run
-
-.. code-block:: sh
-
-  cd $LTT_ROOT
-  tox -e docs
