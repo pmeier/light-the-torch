@@ -117,15 +117,6 @@ class PytorchCandidatePreferences(CandidatePreferences):
 
 
 class PytorchCandidateEvaluator(CandidateEvaluator):
-    # @classmethod
-    # def create(
-    #     cls,
-    #     *args: Any,
-    #     computation_backend: Optional[ComputationBackend] = None,
-    #     **kwargs: Any,
-    # ) -> "PytorchCandidateEvaluator":
-    #     return cls(*args, computation_backend=computation_backend, **kwargs)
-
     def __init__(
         self,
         *args: Any,
@@ -186,15 +177,6 @@ class PytorchLinkCollector(LinkCollector):
 class PytorchPackageFinder(PackageFinder):
     _candidate_prefs: PytorchCandidatePreferences
     _link_collector: PytorchLinkCollector
-
-    # @classmethod
-    # def create(
-    #     cls,
-    #     *args: Any,
-    #     computation_backend: Optional[ComputationBackend] = None,
-    #     **kwargs: Any,
-    # ) -> "PytorchPackageFinder":
-    #     return cls(*args, computation_backend=computation_backend, **kwargs)
 
     def __init__(
         self,
