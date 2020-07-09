@@ -27,6 +27,7 @@ skip = [
   ".pytest_cache",
   ".tox",
   "__pycache__",
+  "ltt/__init__.py",
 ]
 line_length = 88
 use_parentheses = true
