@@ -100,7 +100,7 @@ Usage
     --no-install          print wheel links instead of installing (default:
                           False)
 
-.. info::
+.. note::
 
   The following examples were run on a linux machine with Python 3.6 and CUDA 10.1. The
   distributions hosted on PyPI were built with CUDA 10.2.
@@ -173,7 +173,7 @@ autodetection:
   https://download.pytorch.org/whl/cu92/torch-1.5.1%2Bcu92-cp37-cp37m-win_amd64.whl
   https://download.pytorch.org/whl/torchtext-0.6.0-py3-none-any.whl
 
-.. info::
+.. note::
 
   Optional arguments for ``pip install`` have to be passed after a ``--`` seperator.
 
