@@ -31,6 +31,20 @@ distributions from the stable releases. Similar to the Python version and platfo
 computation backend is auto-detected from the available hardware preferring CUDA over
 CPU.
 
+.. start-badges
+
+.. list-table::
+    :stub-columns: 1
+
+    * - package
+      - |license| |status|
+    * - code
+      - |black| |mypy| |lint|
+    * - tests
+      - |tests| |coverage|
+
+.. end-badges
+
 Installation
 ============
 
@@ -47,19 +61,121 @@ The **latest** potentially unstable version can be installed with
 
   pip install git+https://github.com/pmeier/lighter
 
-.. start-badges
+Usage
+=====
 
-.. list-table::
-    :stub-columns: 1
+``light-the-torch`` is invoked with its shorthand ``ltt``
 
-    * - package
-      - |license| |status|
-    * - code
-      - |black| |mypy| |lint|
-    * - tests
-      - |tests| |coverage|
+.. code-block:: sh
 
-.. end-badges
+  $ ltt --help
+
+  usage: ltt [-h] [-V] [--computation-backend COMPUTATION_BACKEND]
+             [--full-install] [--install-cmd INSTALL_CMD] [--no-install]
+             [args [args ...]]
+
+  Install PyTorch distributions from the stable releases. The computation
+  backend is autodetected from the available hardware preferring CUDA over CPU.
+
+  positional arguments:
+    args                  arguments passed to pip install. Required PyTorch
+                          distributions are extracted and installed. Optional
+                          arguments for pip install have to be seperated by '--'
+                          (default: None)
+
+  optional arguments:
+    -h, --help            show this help message and exit
+    -V, --version         show version and exit (default: False)
+    --computation-backend COMPUTATION_BACKEND
+                          pin computation backend, e.g. 'cpu' or 'cu102'
+                          (default: None)
+    --full-install        install remaining requirements after PyTorch
+                          distributions are installed (default: False)
+    --install-cmd INSTALL_CMD
+                          installation command. '{links}' is substituted for the
+                          links. If present, '{opts}' is substituted for most
+                          additional pip install options. Exceptions are -e /
+                          --editable <path/url> and -r / --requirement <file>
+                          (default: pip install {opts} {links})
+    --no-install          print wheel links instead of installing (default:
+                          False)
+
+.. info::
+
+  The following examples were run on a linux machine with Python 3.6 and CUDA 10.1. The
+  distributions hosted on PyPI were built with CUDA 10.2.
+
+Example 1
+---------
+
+``ltt`` can be used to install PyTorch distributions without worrying about the
+computation backend:
+
+.. code-block:: sh
+
+  $ ltt torch torchvision
+  [...]
+  Successfully installed future-0.18.2 numpy-1.19.0 pillow-7.2.0 torch-1.5.1+cu101 torchvision-0.6.1+cu101
+
+Example 2
+---------
+
+``ltt`` extracts the required PyTorch distributions from the positional arguments:
+
+.. code-block:: sh
+
+  $ ltt kornia
+  [...]
+  Successfully installed torch-1.5.0+cu101
+
+Example 3
+---------
+
+The ``--full-install`` option can be used as a replacement for ``pip install``:
+
+.. code-block::
+
+  $ ltt --full-install kornia
+  [...]
+  Successfully installed future-0.18.2 numpy-1.19.0 torch-1.5.0+cu101
+  [...]
+  Successfully installed kornia-0.3.1
+
+Example 4
+---------
+
+The ``--no-install`` option can be used to pipe or redirect the PyTorch wheel links.
+For example, generating a ``requirements.txt`` file:
+
+.. code-block:: sh
+
+  $ ltt --no-install torchaudio > requirements.txt
+  $ cat requirements.txt
+  https://download.pytorch.org/whl/cu101/torch-1.5.1%2Bcu101-cp36-cp36m-linux_x86_64.whl
+  https://download.pytorch.org/whl/torchaudio-0.5.1-cp36-cp36m-linux_x86_64.whl
+
+Example 5
+---------
+
+The ``--computation-backend`` option as well as the ``--platform`` and
+``--python-version`` options from ``pip install`` can be used to disable the
+autodetection:
+
+.. code-block::
+
+  $ ltt \
+    --no-install \
+    --computation-backend cu92 \
+    -- \
+    --python-version 37 \
+    --platform win_amd64 \
+    torchtext
+  https://download.pytorch.org/whl/cu92/torch-1.5.1%2Bcu92-cp37-cp37m-win_amd64.whl
+  https://download.pytorch.org/whl/torchtext-0.6.0-py3-none-any.whl
+
+.. info::
+
+  Optional arguments for ``pip install`` have to be passed after a ``--`` seperator.
 
 .. |license|
   image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
