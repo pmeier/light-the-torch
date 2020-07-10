@@ -5,6 +5,11 @@ on:
     branches:
       - releases/*
 
+  pull_request:
+    paths:
+      - ".github/pretend_publish_version.py"
+      - ".github/workflows/publish.yml"
+
 jobs:
   pypi:
     runs-on: ubuntu-latest
@@ -24,8 +29,11 @@ jobs:
       - name: Install pep517 and twine
         run: pip install pep517 twine
 
-      - name: Build source and binary
-        run: python -m pep517.build --source --binary .
+      - name: Build source and binary with pretended version
+        run: |
+          pip install setuptools_scm[toml]
+          export SETUPTOOLS_SCM_PRETEND_VERSION=$(python .github/pretend_publish_version.py)
+          python -m pep517.build --source --binary .
 
       - name: Check README
         run: twine check dist/*

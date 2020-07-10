@@ -20,7 +20,6 @@ local_scheme = "node-and-timestamp"
 
 skip = [
   ".git",
-  ".github",
   ".venv",
   ".eggs",
   ".mypy_cache",
@@ -35,7 +34,7 @@ multi_line_output = 3
 force_grid_wrap = 0
 include_trailing_comma = true
 
-known_third_party = ["pytest"]
+known_third_party = ["pytest", "setuptools_scm", "toml"]
 known_first_party = ["ltt"]
 
 [tool.black]
@@ -47,7 +46,6 @@ target-version = ['py36', 'py37', 'py38']
 exclude = '''
 /(
     \.git
-  | \.github
   | \.venv
   | \.eggs
   | \.mypy_cache
