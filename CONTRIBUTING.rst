@@ -8,17 +8,20 @@ without further discussion. If you planning to contribute new features, please o
 `issue <https://github.com/pmeier/light-the-torch/issues>`_
 and discuss the feature with us first.
 
-Every PR is subjected to multiple checks that it has to pass before it can be merged.
-The checks are performed by `tox <https://tox.readthedocs.io/en/latest/>`_ . You can
-install it alongside all other development requirements with
+To start working on ``light-the-torch`` clone from the latest version and install the
+development requirements:
 
 .. code-block:: sh
 
+  LIGHT_THE_TORCH_ROOT = light-the-torch
+  git clone https://github.com/pmeier/light-the-torch $LIGHT_THE_TORCH_ROOT
   cd $LIGHT_THE_TORCH_ROOT
   pip install -r requirements-dev.txt
+  pre-commit install
 
-Below you can find details and instructions how to run the checks locally.
-
+Every PR is subjected to multiple checks that it has to pass before it can be merged.
+The checks are performed by `tox <https://tox.readthedocs.io/en/latest/>`_ . Below
+you can find details and instructions how to run the checks locally.
 
 Code format and linting
 -----------------------
@@ -28,8 +31,9 @@ imports, `black <https://black.readthedocs.io/en/stable/>`_ to format the code, 
 `flake8 <https://flake8.pycqa.org/en/latest/>`_ to enforce
 `PEP8 <https://www.python.org/dev/peps/pep-0008/>`_ compliance.
 
-Furthermore, ``light-the-torch`` is `PEP561 <https://www.python.org/dev/peps/pep-0561/>`_
-compliant and checks the type annotations with `mypy <http://mypy-lang.org/>`_ .
+Furthermore, ``light-the-torch`` is
+`PEP561 <https://www.python.org/dev/peps/pep-0561/>`_ compliant and checks the type
+annotations with `mypy <http://mypy-lang.org/>`_ .
 
 To format your code run
 
@@ -40,14 +44,8 @@ To format your code run
 
 .. note::
 
-  The formatting with ``isort``, ``black``, as well as other minor utilities can be
-  performed by `pre-commit <https://pre-commit.com/>`_ before every commit.
-  ``pre-commit`` is installed as development requirement. To enable this behavior run
-
-  .. code-block:: sh
-
-    cd $LIGHT_THE_TORCH_ROOT
-    pre-commit install
+  Amongst others, ``isort`` and ``black`` are run by
+  `pre-commit <https://pre-commit.com/>`_ before every commit.
 
 To run the full lint check locally run
 
