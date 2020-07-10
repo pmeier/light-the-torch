@@ -8,9 +8,8 @@ on:
 
   pull_request:
     paths:
-      - "ltt/**"
+      - "light_the_torch/**"
       - "tests/**"
-      - "setup.py"
       - "pytest.ini"
       - "tox.ini"
       - ".coveragerc"
