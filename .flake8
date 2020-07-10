@@ -6,7 +6,6 @@
 
 exclude =
     .git,
-    .github,
     .venv,
     .eggs,
     .mypy_cache,

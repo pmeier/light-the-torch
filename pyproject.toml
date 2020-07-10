@@ -20,7 +20,6 @@ local_scheme = "node-and-timestamp"
 
 skip = [
   ".git",
-  ".github",
   ".venv",
   ".eggs",
   ".mypy_cache",
@@ -47,7 +46,6 @@ target-version = ['py36', 'py37', 'py38']
 exclude = '''
 /(
     \.git
-  | \.github
   | \.venv
   | \.eggs
   | \.mypy_cache
