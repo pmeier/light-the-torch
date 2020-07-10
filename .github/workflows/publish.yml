@@ -29,13 +29,11 @@ jobs:
       - name: Install pep517 and twine
         run: pip install pep517 twine
 
-      - name: Pretend publish version
+      - name: Build source and binary with pretended version
         run: |
           pip install setuptools_scm[toml]
           export SETUPTOOLS_SCM_PRETEND_VERSION=$(python .github/pretend_publish_version.py)
-
-      - name: Build source and binary
-        run: python -m pep517.build --source --binary .
+          python -m pep517.build --source --binary .
 
       - name: Check README
         run: twine check dist/*
