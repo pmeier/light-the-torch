@@ -21,9 +21,9 @@ def test_StopAfterPytorchDistsFoundResolver_no_torch(mocker):
     assert "torch" in resolver.required_pytorch_dists
 
 
-# @pytest.mark.slow
-# def test_resolve_dists_ltt():
-#     assert ltt.resolve_dists(["ltt"]) == []
+@pytest.mark.slow
+def test_resolve_dists_ltt():
+    assert ltt.resolve_dists(["light-the-torch"]) == []
 
 
 @pytest.mark.slow
