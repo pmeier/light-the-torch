@@ -1,6 +1,20 @@
 light-the-torch
 ===============
 
+.. start-badges
+
+.. list-table::
+    :stub-columns: 1
+
+    * - package
+      - |license| |status|
+    * - code
+      - |black| |mypy| |lint|
+    * - tests
+      - |tests| |coverage|
+
+.. end-badges
+
 With each release of a PyTorch distribution (``torch``, ``torchvision``,
 ``torchaudio``, ``torchtext``) the wheels are published for combinations of different
 Python versions, platforms, and computation backends (CPU, CUDA). Unfortunately, a
@@ -30,20 +44,6 @@ be installed.
 distributions from the stable releases. Similar to the Python version and platform, the
 computation backend is auto-detected from the available hardware preferring CUDA over
 CPU.
-
-.. start-badges
-
-.. list-table::
-    :stub-columns: 1
-
-    * - package
-      - |license| |status|
-    * - code
-      - |black| |mypy| |lint|
-    * - tests
-      - |tests| |coverage|
-
-.. end-badges
 
 Installation
 ============
