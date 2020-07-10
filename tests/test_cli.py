@@ -6,7 +6,7 @@ from io import StringIO
 
 import pytest
 
-import light_the_torch
+import light_the_torch as ltt
 from light_the_torch import cli
 from light_the_torch import computation_backend as cb
 
@@ -57,25 +57,27 @@ def test_main_version(subtests, mocker, patch_argv):
                 cli.main()
 
             out = stdout.getvalue().strip()
-            assert out == f"{light_the_torch.__name__}=={light_the_torch.__version__}"
+            assert out == f"{ltt.__name__}=={ltt.__version__}"
 
 
 def test_main_no_distributions(mocker, patch_argv):
     patch_argv()
-    mocker.patch("ltt.cli.ltt.resolve_dists", return_value=[])
-    mocker.patch("ltt.cli.ltt.find_links", side_effect=RuntimeError)
+    mocker.patch("light_the_torch.cli.ltt.resolve_dists", return_value=[])
+    mocker.patch("light_the_torch.cli.ltt.find_links", side_effect=RuntimeError)
 
     with exits():
         cli.main()
 
 
 def test_main_no_install(mocker, patch_argv):
-    mocker.patch("ltt.cli.ltt.resolve_dists", return_value=["generic_pytorch_dist"])
+    mocker.patch(
+        "light_the_torch.cli.ltt.resolve_dists", return_value=["generic_pytorch_dist"]
+    )
     links = [
         "https://download.pytorch.org/foo.whl",
         "https://download.pytorch.org/bar.whl",
     ]
-    mocker.patch("ltt.cli.ltt.find_links", return_value=links)
+    mocker.patch("light_the_torch.cli.ltt.find_links", return_value=links)
     patch_argv("--no-install", "baz")
     stdout = mocker.patch.object(sys, "stdout", StringIO())
 
@@ -87,17 +89,19 @@ def test_main_no_install(mocker, patch_argv):
 
 
 def test_main_install(subtests, mocker, patch_argv):
-    mocker.patch("ltt.cli.ltt.resolve_dists", return_value=["generic_pytorch_idst"])
+    mocker.patch(
+        "light_the_torch.cli.ltt.resolve_dists", return_value=["generic_pytorch_idst"]
+    )
     links = [
         "https://download.pytorch.org/foo.whl",
         "https://download.pytorch.org/bar.whl",
     ]
-    mocker.patch("ltt.cli.ltt.find_links", return_value=links)
+    mocker.patch("light_the_torch.cli.ltt.find_links", return_value=links)
     install_cmd = "pip install {links}"
     arg = "baz"
     patch_argv("--install-cmd", install_cmd, arg)
 
-    check_call_mock = mocker.patch("ltt.cli.subprocess.check_call")
+    check_call_mock = mocker.patch("light_the_torch.cli.subprocess.check_call")
 
     with exits():
         cli.main()
@@ -109,17 +113,19 @@ def test_main_install(subtests, mocker, patch_argv):
 
 
 def test_main_full_install(subtests, mocker, patch_argv):
-    mocker.patch("ltt.cli.ltt.resolve_dists", return_value=["generic_pytorch_dist"])
+    mocker.patch(
+        "light_the_torch.cli.ltt.resolve_dists", return_value=["generic_pytorch_dist"]
+    )
     links = [
         "https://download.pytorch.org/foo.whl",
         "https://download.pytorch.org/bar.whl",
     ]
-    mocker.patch("ltt.cli.ltt.find_links", return_value=links)
+    mocker.patch("light_the_torch.cli.ltt.find_links", return_value=links)
     install_cmd = "pip install {links}"
     arg = "baz"
     patch_argv("--full-install", "--install-cmd", install_cmd, arg)
 
-    check_call_mock = mocker.patch("ltt.cli.subprocess.check_call")
+    check_call_mock = mocker.patch("light_the_torch.cli.subprocess.check_call")
 
     with exits():
         cli.main()

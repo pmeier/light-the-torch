@@ -2,17 +2,17 @@ import sys
 
 import pytest
 
-import light_the_torch
+import light_the_torch as ltt
 from light_the_torch import computation_backend as cb
 from light_the_torch._core.common import InternalLTTError
 from light_the_torch._core.find import PytorchCandidatePreferences
 
 
 def test_resolve_dists_internal_error(mocker):
-    mocker.patch("ltt._core.find.run")
+    mocker.patch("light_the_torch._core.find.run")
 
     with pytest.raises(InternalLTTError):
-        light_the_torch.find_links(["foo"])
+        ltt.find_links(["foo"])
 
 
 def test_PytorchCandidatePreferences_detect_computation_backend(mocker):
@@ -23,7 +23,8 @@ def test_PytorchCandidatePreferences_detect_computation_backend(mocker):
 
     computation_backend = GenericComputationBackend()
     mocker.patch(
-        "ltt._core.find.detect_computation_backend", return_value=computation_backend,
+        "light_the_torch._core.find.detect_computation_backend",
+        return_value=computation_backend,
     )
 
     candidate_prefs = PytorchCandidatePreferences()
@@ -44,9 +45,7 @@ def test_find_links_torch_smoke(subtests, computation_backends):
 
     for computation_backend in computation_backends:
         with subtests.test(computation_backend=computation_backend):
-            assert light_the_torch.find_links(
-                [dist], computation_backend=computation_backend
-            )
+            assert ltt.find_links([dist], computation_backend=computation_backend)
 
 
 @pytest.mark.slow
@@ -58,9 +57,7 @@ def test_find_links_torchaudio_smoke(subtests, computation_backends):
 
     for computation_backend in computation_backends:
         with subtests.test(computation_backend=computation_backend):
-            assert light_the_torch.find_links(
-                [dist], computation_backend=computation_backend
-            )
+            assert ltt.find_links([dist], computation_backend=computation_backend)
 
 
 @pytest.mark.slow
@@ -69,9 +66,7 @@ def test_find_links_torchtext_smoke(subtests, computation_backends):
 
     for computation_backend in computation_backends:
         with subtests.test(computation_backend=computation_backend):
-            assert light_the_torch.find_links(
-                [dist], computation_backend=computation_backend
-            )
+            assert ltt.find_links([dist], computation_backend=computation_backend)
 
 
 @pytest.mark.slow
@@ -80,6 +75,4 @@ def test_find_links_torchvision_smoke(subtests, computation_backends):
 
     for computation_backend in computation_backends:
         with subtests.test(computation_backend=computation_backend):
-            assert light_the_torch.find_links(
-                [dist], computation_backend=computation_backend
-            )
+            assert ltt.find_links([dist], computation_backend=computation_backend)
