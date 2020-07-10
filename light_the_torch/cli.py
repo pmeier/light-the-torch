@@ -5,7 +5,7 @@ import sys
 from copy import copy
 from typing import Iterable, List, NoReturn, Optional, Sequence, Tuple
 
-import ltt
+import light_the_torch
 
 from ._core.common import PatchedInstallCommand
 from .computation_backend import ComputationBackend
@@ -16,12 +16,12 @@ __all__ = ["main"]
 def main(args: Optional[List[str]] = None) -> None:
     args, ltt_options, pip_install_options = parse_args(args=args)
 
-    dists = ltt.resolve_dists(args, options=pip_install_options)
+    dists = light_the_torch.resolve_dists(args, options=pip_install_options)
 
     if not dists:
         exit_ok()
 
-    links = ltt.find_links(
+    links = light_the_torch.find_links(
         dists,
         options=pip_install_options,
         computation_backend=ltt_options.computation_backend,
@@ -73,7 +73,7 @@ def parse_ltt_args(args: List[str]) -> Tuple[argparse.Namespace, List[str]]:
     options = parser.parse_args(args)
 
     if options.version:
-        print(f"{ltt.__name__}=={ltt.__version__}")
+        print(f"{light_the_torch.__name__}=={light_the_torch.__version__}")
         exit_ok()
     else:
         delattr(options, "version")

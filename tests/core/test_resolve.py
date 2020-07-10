@@ -1,15 +1,15 @@
 import pytest
 
-import ltt
-from ltt._core import resolve
-from ltt._core.common import InternalLTTError
+import light_the_torch
+from light_the_torch._core import resolve
+from light_the_torch._core.common import InternalLTTError
 
 
 def test_resolve_dists_internal_error(mocker):
     mocker.patch("ltt._core.resolve.run")
 
     with pytest.raises(InternalLTTError):
-        ltt.resolve_dists(["foo"])
+        light_the_torch.resolve_dists(["foo"])
 
 
 def test_StopAfterPytorchDistsFoundResolver_no_torch(mocker):
@@ -33,7 +33,7 @@ def test_resolve_dists_pystiche(subtests):
     )
     for req, dists in reqs_and_dists:
         with subtests.test(req=req):
-            assert set(ltt.resolve_dists([req])) == dists
+            assert set(light_the_torch.resolve_dists([req])) == dists
 
 
 @pytest.mark.slow
@@ -45,4 +45,4 @@ def test_resolve_dists_kornia(subtests):
     )
     for req, dists in reqs_and_dists:
         with subtests.test(req=req):
-            assert set(ltt.resolve_dists([req])) == dists
+            assert set(light_the_torch.resolve_dists([req])) == dists

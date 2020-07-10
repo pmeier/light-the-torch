@@ -6,9 +6,9 @@ from io import StringIO
 
 import pytest
 
-import ltt
-from ltt import cli
-from ltt import computation_backend as cb
+import light_the_torch
+from light_the_torch import cli
+from light_the_torch import computation_backend as cb
 
 
 @contextlib.contextmanager
@@ -57,7 +57,7 @@ def test_main_version(subtests, mocker, patch_argv):
                 cli.main()
 
             out = stdout.getvalue().strip()
-            assert out == f"{ltt.__name__}=={ltt.__version__}"
+            assert out == f"{light_the_torch.__name__}=={light_the_torch.__version__}"
 
 
 def test_main_no_distributions(mocker, patch_argv):

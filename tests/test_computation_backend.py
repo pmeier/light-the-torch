@@ -2,7 +2,7 @@ import subprocess
 
 import pytest
 
-from ltt import computation_backend as cb
+from light_the_torch import computation_backend as cb
 
 
 @pytest.fixture

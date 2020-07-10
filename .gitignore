@@ -1,4 +1,4 @@
-ltt/_version.py
+light_the_torch/_version.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

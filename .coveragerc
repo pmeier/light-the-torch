@@ -1,7 +1,7 @@
 [run]
 
 omit =
-  ltt/__main__.py
+  light_the_torch/__main__.py
 
 [report]
 

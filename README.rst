@@ -48,18 +48,18 @@ CPU.
 Installation
 ============
 
-The latest **stable** version can be installed with
+The latest **published** version can be installed with
 
 .. code-block:: sh
 
-  pip install lighter
+  pip install light-the-torch
 
 
-The **latest** potentially unstable version can be installed with
+The latest, potentially unstable **development** version can be installed with
 
 .. code-block::
 
-  pip install git+https://github.com/pmeier/lighter
+  pip install git+https://github.com/pmeier/light-the-torch
 
 Usage
 =====

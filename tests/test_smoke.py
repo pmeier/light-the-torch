@@ -1,7 +1,7 @@
 import importlib
 import pkgutil
 
-import ltt as package_under_test
+import light_the_torch as package_under_test
 
 
 def test_importability(subtests):

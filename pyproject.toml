@@ -10,7 +10,7 @@ build-backend = "setuptools.build_meta"
 # See link below for available options
 # https://github.com/pypa/setuptools_scm/#configuration-parameters
 
-write_to = "ltt/_version.py"
+write_to = "light_the_torch/_version.py"
 version_scheme = "release-branch-semver"
 local_scheme = "node-and-timestamp"
 
@@ -26,7 +26,7 @@ skip = [
   ".pytest_cache",
   ".tox",
   "__pycache__",
-  "ltt/__init__.py",
+  "light_the_torch/__init__.py",
 ]
 line_length = 88
 use_parentheses = true
@@ -35,7 +35,7 @@ force_grid_wrap = 0
 include_trailing_comma = true
 
 known_third_party = ["pytest", "setuptools_scm", "toml"]
-known_first_party = ["ltt"]
+known_first_party = ["light_the_torch"]
 
 [tool.black]
 # See link below for available options
