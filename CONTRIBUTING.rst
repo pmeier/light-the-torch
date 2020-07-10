@@ -31,8 +31,9 @@ imports, `black <https://black.readthedocs.io/en/stable/>`_ to format the code, 
 `flake8 <https://flake8.pycqa.org/en/latest/>`_ to enforce
 `PEP8 <https://www.python.org/dev/peps/pep-0008/>`_ compliance.
 
-Furthermore, ``light-the-torch`` is `PEP561 <https://www.python.org/dev/peps/pep-0561/>`_
-compliant and checks the type annotations with `mypy <http://mypy-lang.org/>`_ .
+Furthermore, ``light-the-torch`` is
+`PEP561 <https://www.python.org/dev/peps/pep-0561/>`_ compliant and checks the type
+annotations with `mypy <http://mypy-lang.org/>`_ .
 
 To format your code run
 
