@@ -5,7 +5,7 @@ import sys
 from copy import copy
 from typing import Iterable, List, NoReturn, Optional, Sequence, Tuple
 
-import ltt
+import light_the_torch as ltt
 
 from ._core.common import PatchedInstallCommand
 from .computation_backend import ComputationBackend

@@ -14,7 +14,7 @@ install it alongside all other development requirements with
 
 .. code-block:: sh
 
-  cd $LTT_ROOT
+  cd $LIGHT_THE_TORCH_ROOT
   pip install -r requirements-dev.txt
 
 Below you can find details and instructions how to run the checks locally.
@@ -35,7 +35,7 @@ To format your code run
 
 .. code-block:: sh
 
-  cd $LTT_ROOT
+  cd $LIGHT_THE_TORCH_ROOT
   tox -e format
 
 .. note::
@@ -46,26 +46,26 @@ To format your code run
 
   .. code-block:: sh
 
-    cd $LTT_ROOT
+    cd $LIGHT_THE_TORCH_ROOT
     pre-commit install
 
 To run the full lint check locally run
 
 .. code-block:: sh
 
-  cd $LTT_ROOT
+  cd $LIGHT_THE_TORCH_ROOT
   tox -e lint
 
 
 Tests
 -----
 
-``pystiche`` uses `pytest <https://docs.pytest.org/en/stable/>`_ to run the test suite.
-You can run it locally with
+``light-the-torch`` uses `pytest <https://docs.pytest.org/en/stable/>`_ to run the test 
+suite. You can run it locally with
 
 .. code-block:: sh
 
-  cd $LTT_ROOT
+  cd $LIGHT_THE_TORCH_ROOT
   tox
 
 .. note::
@@ -85,5 +85,5 @@ You can run it locally with
 
   .. code-block:: sh
 
-    cd $LTT_ROOT
+    cd $LIGHT_THE_TORCH_ROOT
     tox -- --skip-large-download

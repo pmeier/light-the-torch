@@ -1,19 +1,21 @@
 import pytest
 
-import ltt
-from ltt._core import resolve
-from ltt._core.common import InternalLTTError
+import light_the_torch as ltt
+from light_the_torch._core import resolve
+from light_the_torch._core.common import InternalLTTError
 
 
 def test_resolve_dists_internal_error(mocker):
-    mocker.patch("ltt._core.resolve.run")
+    mocker.patch("light_the_torch._core.resolve.run")
 
     with pytest.raises(InternalLTTError):
         ltt.resolve_dists(["foo"])
 
 
 def test_StopAfterPytorchDistsFoundResolver_no_torch(mocker):
-    mocker.patch("ltt._core.resolve.PatchedResolverBase.__init__", return_value=None)
+    mocker.patch(
+        "light_the_torch._core.resolve.PatchedResolverBase.__init__", return_value=None
+    )
     resolver = resolve.StopAfterPytorchDistsFoundResolver()
     resolver._required_pytorch_dists = ["torchaudio", "torchtext", "torchvision"]
     assert "torch" in resolver.required_pytorch_dists

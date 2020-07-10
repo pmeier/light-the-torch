@@ -2,14 +2,14 @@ import sys
 
 import pytest
 
-import ltt
-from ltt import computation_backend as cb
-from ltt._core.common import InternalLTTError
-from ltt._core.find import PytorchCandidatePreferences
+import light_the_torch as ltt
+from light_the_torch import computation_backend as cb
+from light_the_torch._core.common import InternalLTTError
+from light_the_torch._core.find import PytorchCandidatePreferences
 
 
 def test_resolve_dists_internal_error(mocker):
-    mocker.patch("ltt._core.find.run")
+    mocker.patch("light_the_torch._core.find.run")
 
     with pytest.raises(InternalLTTError):
         ltt.find_links(["foo"])
@@ -23,7 +23,8 @@ def test_PytorchCandidatePreferences_detect_computation_backend(mocker):
 
     computation_backend = GenericComputationBackend()
     mocker.patch(
-        "ltt._core.find.detect_computation_backend", return_value=computation_backend,
+        "light_the_torch._core.find.detect_computation_backend",
+        return_value=computation_backend,
     )
 
     candidate_prefs = PytorchCandidatePreferences()
