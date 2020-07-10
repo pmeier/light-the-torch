@@ -90,7 +90,7 @@ skip_if_cuda_unavailable = pytest.mark.skipif(
 
 def test_detect_computation_backend_no_nvcc(mocker):
     mocker.patch(
-        "ltt.computation_backend.subprocess.check_output",
+        "light_the_torch.computation_backend.subprocess.check_output",
         side_effect=subprocess.CalledProcessError(1, ""),
     )
 
@@ -99,7 +99,7 @@ def test_detect_computation_backend_no_nvcc(mocker):
 
 def test_detect_computation_backend_unknown_release(mocker):
     mocker.patch(
-        "ltt.computation_backend.subprocess.check_output",
+        "light_the_torch.computation_backend.subprocess.check_output",
         return_value="release unknown".encode("utf-8"),
     )
 
@@ -110,7 +110,7 @@ def test_detect_computation_backend_cuda(mocker):
     major = 42
     minor = 21
     mocker.patch(
-        "ltt.computation_backend.subprocess.check_output",
+        "light_the_torch.computation_backend.subprocess.check_output",
         return_value=f"foo\nbar, release {major}.{minor}, baz".encode("utf-8"),
     )
 
