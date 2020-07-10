@@ -19,7 +19,7 @@ on:
       - ".github/workflows/tests.yml"
 
 jobs:
-  run:
+  unit:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -46,10 +46,33 @@ jobs:
       - name: Install dev requirements
         run: pip install -r requirements-dev.txt
 
-      - name: Run tests
+      - name: Run unit tests
         run: tox -e py -- --skip-large-download
 
       - name: Upload coverage
         uses: codecov/codecov-action@v1.0.7
         with:
           env_vars: OS,PYTHON
+
+  cli:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.6"
+
+      - name: Upgrade and install additional system packages
+        run: pip install --upgrade pip setuptools virtualenv wheel
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install project
+        run: pip install .
+
+      - name: Test CLI
+        run: |
+          ltt --version
+          ltt --help
