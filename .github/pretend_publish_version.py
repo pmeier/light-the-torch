@@ -1,6 +1,7 @@
-from setuptools_scm import get_version
-import toml
 from os import path
+
+import toml
+from setuptools_scm import get_version
 
 
 def get_version_scheme(root):
