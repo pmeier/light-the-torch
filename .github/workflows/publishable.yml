@@ -3,6 +3,7 @@ name: publishable
 on:
   push:
     branches:
+      - master
       - releases/*
 
   pull_request:
@@ -17,7 +18,7 @@ on:
       - "README.rst"
       - "tox.ini"
       - "requirements-dev.txt"
-      - ".github/workflows/publish.yml"
+      - ".github/workflows/publishable.yml"
 
 jobs:
   pypi:
