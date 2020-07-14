@@ -19,6 +19,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Install pep517 and twine
         run: pip install pep517 twine
