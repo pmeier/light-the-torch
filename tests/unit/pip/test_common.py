@@ -1,6 +1,6 @@
 import pytest
 
-from light_the_torch._core import common
+from light_the_torch._pip import common
 
 
 def test_get_public_or_private_attr_public_and_private():
