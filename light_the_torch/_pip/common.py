@@ -10,6 +10,7 @@ from pip._internal.utils.temp_dir import global_tempdir_manager, tempdir_registr
 __all__ = [
     "InternalLTTError",
     "PatchedInstallCommand",
+    "make_pip_install_parser",
     "run",
     "new_from_similar",
     "PatchedResolverBase",
@@ -32,19 +33,29 @@ class PatchedInstallCommand(InstallCommand):
     ) -> None:
         super().__init__(name, summary, **kwargs)
 
-    @property
-    def default_options(self) -> optparse.Values:
-        return optparse.Values(self.parser.defaults)
+
+def make_pip_install_parser() -> optparse.OptionParser:
+    return cast(optparse.OptionParser, PatchedInstallCommand().parser)
 
 
-def run(cmd: InstallCommand, args: Iterable[str], options: optparse.Values) -> int:
+def get_verbosity(options: optparse.Values, verbose: bool) -> int:
+    if not verbose:
+        return -1
+
+    return cast(int, options.verbose) - cast(int, options.quiet)
+
+
+def run(
+    cmd: InstallCommand, args: Iterable[str], options: optparse.Values, verbose: bool
+) -> int:
     with cmd.main_context():
         cmd.tempdir_registry = cmd.enter_context(tempdir_registry())
         cmd.enter_context(global_tempdir_manager())
 
-        verbosity = options.verbose - options.quiet
         setup_logging(
-            verbosity=verbosity, no_color=options.no_color, user_log_file=options.log,
+            verbosity=get_verbosity(options, verbose),
+            no_color=options.no_color,
+            user_log_file=options.log,
         )
 
         return cast(int, cmd.run(options, list(args)))

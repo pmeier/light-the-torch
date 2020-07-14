@@ -1,23 +1,21 @@
-import optparse
 import re
-from typing import Any, List, NoReturn, Optional, cast
+from typing import Any, List, NoReturn, cast
 
 from pip._internal.req.req_install import InstallRequirement
 from pip._internal.req.req_set import RequirementSet
 
 from .common import InternalLTTError, PatchedInstallCommand, PatchedResolverBase, run
 
-__all__ = ["resolve_dists"]
+__all__ = ["extract_pytorch_dists"]
 
 
-def resolve_dists(
-    requirements: List[str], options: Optional[optparse.Values] = None
+def extract_pytorch_dists(
+    pip_install_args: List[str], verbose: bool = False
 ) -> List[str]:
     cmd = StopAfterPytorchDistsFoundInstallCommand()
-    if options is None:
-        options = cmd.default_options
+    options, args = cmd.parser.parse_args(pip_install_args)
     try:
-        run(cmd, requirements, options)
+        run(cmd, args, options, verbose)
     except PytorchDistsFound as resolution:
         return resolution.dists
     else:
