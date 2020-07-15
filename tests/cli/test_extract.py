@@ -43,3 +43,10 @@ def test_ltt_extract_verbose(patch_extract_argv, patch_extract_dists):
     _, kwargs = extract_dists.call_args
     assert "verbose" in kwargs
     assert kwargs["verbose"]
+
+
+def test_extract_unrecognized_argument(patch_extract_argv):
+    patch_extract_argv("--unrecognized-argument")
+
+    with exits(error=True):
+        cli.main()

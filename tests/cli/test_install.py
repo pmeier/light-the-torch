@@ -188,3 +188,10 @@ def test_ltt_install_verbose(
     _, kwargs = find_links.call_args
     assert "verbose" in kwargs
     assert kwargs["verbose"]
+
+
+def test_install_unrecognized_argument(patch_install_argv):
+    patch_install_argv("--unrecognized-argument")
+
+    with exits(error=True):
+        cli.main()
