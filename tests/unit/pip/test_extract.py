@@ -21,6 +21,13 @@ def test_StopAfterPytorchDistsFoundResolver_no_torch(mocker):
     assert "torch" in resolver.required_pytorch_dists
 
 
+def test_extract_pytorch_dists_internal_error(mocker):
+    mocker.patch("light_the_torch._pip.extract.run")
+
+    with pytest.raises(InternalLTTError):
+        ltt.extract_pytorch_dists(["foo"])
+
+
 @pytest.mark.slow
 def test_extract_dists_ltt():
     assert ltt.extract_dists(["light-the-torch"]) == []
