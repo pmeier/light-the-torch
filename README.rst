@@ -15,16 +15,25 @@ light-the-torch
 
 .. end-badges
 
+``light-the-torch`` offers a small CLI (and
+`tox plugin <https://github.com/pmeier/tox-ltt>`_) based on ``pip`` to install PyTorch
+distributions from the stable releases. Similar to the platform and Python version, the
+computation backend is auto-detected from the available hardware preferring CUDA over
+CPU.
+
+Motivation
+==========
+
 With each release of a PyTorch distribution (``torch``, ``torchvision``,
 ``torchaudio``, ``torchtext``) the wheels are published for combinations of different
-Python versions, platforms, and computation backends (CPU, CUDA). Unfortunately, a
+computation backends (CPU, CUDA), platforms, and Python versions. Unfortunately, a
 differentation based on the computation backend is not supported by
 `PEP 440 <https://www.python.org/dev/peps/pep-0440/>`_ . As a workaround the
 computation backend is added as a local specifier. For example
 
 .. code-block:: sh
 
-  torch==1.5.1+<computation backend>
+  torch==1.5.1+cpu
 
 Due to this restriction only the wheels of the latest CUDA release are uploaded to
 `PyPI <https://pypi.org/search/?q=torch>`_ and thus easily ``pip install`` able. For
@@ -33,17 +42,14 @@ manual version specification:
 
 .. code-block:: sh
 
-  pip install -f https://download.pytorch.org/whl/torch_stable.html torch==1.5.1+<computation backend>
+  pip install -f https://download.pytorch.org/whl/torch_stable.html torch==1.5.1+cu101
 
 This is especially frustrating if one wants to install packages that depend on one or
 several PyTorch distributions: for each package the required PyTorch distributions have
 to be manually tracked down, resolved, and installed before the other requirements can
 be installed.
 
-``light-the-torch`` offers a small CLI based on ``pip`` to install the PyTorch
-distributions from the stable releases. Similar to the Python version and platform, the
-computation backend is auto-detected from the available hardware preferring CUDA over
-CPU.
+``light-the-torch`` was developed to overcome this.
 
 Installation
 ============
