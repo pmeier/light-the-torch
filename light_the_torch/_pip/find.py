@@ -1,6 +1,5 @@
-import optparse
 import re
-from typing import Any, Iterable, List, NoReturn, Optional, Text, Tuple, cast
+from typing import Any, Iterable, List, NoReturn, Optional, Text, Tuple, Union, cast
 
 from pip._internal.index.collector import LinkCollector
 from pip._internal.index.package_finder import (
@@ -23,24 +22,74 @@ from .common import (
     new_from_similar,
     run,
 )
+from .extract import extract_pytorch_dists
 
 __all__ = ["find_links"]
 
 
 def find_links(
-    args: Iterable[str],
-    options: Optional[optparse.Values] = None,
-    computation_backend: Optional[ComputationBackend] = None,
+    pip_install_args: List[str],
+    computation_backend: Optional[Union[str, ComputationBackend]] = None,
+    platform: Optional[str] = None,
+    python_version: Optional[str] = None,
+    verbose: bool = False,
 ) -> List[str]:
+    if isinstance(computation_backend, str):
+        computation_backend = ComputationBackend.from_str(computation_backend)
+
+    dists = extract_pytorch_dists(pip_install_args)
+
     cmd = StopAfterPytorchLinksFoundCommand(computation_backend=computation_backend)
-    if options is None:
-        options = cmd.default_options
+    pip_install_args = adjust_pip_install_args(dists, platform, python_version)
+    options, args = cmd.parser.parse_args(pip_install_args)
     try:
-        run(cmd, args, options)
+        run(cmd, args, options, verbose)
     except PytorchLinksFound as resolution:
         return resolution.links
     else:
         raise InternalLTTError
+
+
+def adjust_pip_install_args(
+    pip_install_args: List[str], platform: Optional[str], python_version: Optional[str]
+) -> List[str]:
+    if platform is None and python_version is None:
+        return pip_install_args
+
+    if platform is not None:
+        pip_install_args = maybe_add_option(
+            pip_install_args, "--platform", value=platform
+        )
+    if platform is not None:
+        pip_install_args = maybe_add_option(
+            pip_install_args, "--python-version", value=python_version
+        )
+    return maybe_set_required_options(pip_install_args)
+
+
+def maybe_add_option(
+    args: List[str],
+    option: str,
+    value: Optional[str] = None,
+    aliases: Iterable[str] = (),
+) -> List[str]:
+    if any(arg in args for arg in (option, *aliases)):
+        return args
+
+    additional_args = [option]
+    if value is not None:
+        additional_args.append(value)
+    return additional_args + args
+
+
+def maybe_set_required_options(pip_install_args: List[str]) -> List[str]:
+    pip_install_args = maybe_add_option(
+        pip_install_args, "-t", value=".", aliases=("--target",)
+    )
+    pip_install_args = maybe_add_option(
+        pip_install_args, "--only-binary", value=":all:"
+    )
+    return pip_install_args
 
 
 class PytorchLinksFound(RuntimeError):
