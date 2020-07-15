@@ -6,12 +6,10 @@ from pip._internal.req.req_set import RequirementSet
 
 from .common import InternalLTTError, PatchedInstallCommand, PatchedResolverBase, run
 
-__all__ = ["extract_pytorch_dists"]
+__all__ = ["extract_dists"]
 
 
-def extract_pytorch_dists(
-    pip_install_args: List[str], verbose: bool = False
-) -> List[str]:
+def extract_dists(pip_install_args: List[str], verbose: bool = False) -> List[str]:
     cmd = StopAfterPytorchDistsFoundInstallCommand()
     options, args = cmd.parser.parse_args(pip_install_args)
     try:

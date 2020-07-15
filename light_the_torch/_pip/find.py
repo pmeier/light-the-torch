@@ -22,7 +22,7 @@ from .common import (
     new_from_similar,
     run,
 )
-from .extract import extract_pytorch_dists
+from .extract import extract_dists
 
 __all__ = ["find_links"]
 
@@ -37,7 +37,7 @@ def find_links(
     if isinstance(computation_backend, str):
         computation_backend = ComputationBackend.from_str(computation_backend)
 
-    dists = extract_pytorch_dists(pip_install_args)
+    dists = extract_dists(pip_install_args)
 
     cmd = StopAfterPytorchLinksFoundCommand(computation_backend=computation_backend)
     pip_install_args = adjust_pip_install_args(dists, platform, python_version)

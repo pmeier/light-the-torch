@@ -47,7 +47,7 @@ class ExtractCommand(Command):
         self.verbose = args.verbose
 
     def _run(self, pip_install_args: List[str]) -> None:
-        dists = ltt.extract_pytorch_dists(pip_install_args, verbose=self.verbose)
+        dists = ltt.extract_dists(pip_install_args, verbose=self.verbose)
         print("\n".join(dists))
 
 
@@ -113,8 +113,5 @@ COMMAD_CLASSES: Dict[Optional[str], Type[Command]] = {
 
 
 def make_command(args: argparse.Namespace) -> Command:
-    try:
-        cls = COMMAD_CLASSES[args.subcommand]
-        return cls(args)
-    except KeyError:
-        raise RuntimeError(f"Unknown command '{args.subcommand}'")
+    cls = COMMAD_CLASSES[args.subcommand]
+    return cls(args)
