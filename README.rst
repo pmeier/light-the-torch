@@ -122,12 +122,20 @@ computation backend:
 .. code-block:: sh
 
   $ ltt install torch torchvision
+  [...]
+  Successfully installed future-0.18.2 numpy-1.19.0 pillow-7.2.0 torch-1.5.1+cu101 torchvision-0.6.1+cu101
+  [...]
+
 
 ``ltt install`` is also able to handle packages that depend on PyTorch distributions:
 
 .. code-block:: sh
 
   $ ltt install kornia
+  [...]
+  Successfully installed future-0.18.2 numpy-1.19.0 torch-1.5.0+cu101
+  [...]
+  Successfully installed kornia-0.3.1
 
 ``ltt extract``
 ^^^^^^^^^^^^^^^
