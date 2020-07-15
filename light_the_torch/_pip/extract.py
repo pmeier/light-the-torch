@@ -10,6 +10,16 @@ __all__ = ["extract_dists"]
 
 
 def extract_dists(pip_install_args: List[str], verbose: bool = False) -> List[str]:
+    """Extract direct or indirect required PyTorch distributions.
+
+    Args:
+        pip_install_args: Arguments passed to ``pip install`` that will be searched for
+            required PyTorch distributions
+        verbose: If ``True``, print additional information to STDOUT.
+
+    Returns:
+        Resolved required PyTorch distributions.
+    """
     cmd = StopAfterPytorchDistsFoundInstallCommand()
     options, args = cmd.parser.parse_args(pip_install_args)
     try:
