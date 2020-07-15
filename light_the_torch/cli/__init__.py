@@ -2,6 +2,7 @@ import argparse
 import sys
 from typing import List, Optional, Sequence, Tuple
 
+from .._pip.common import make_pip_install_parser
 from .commands import make_command
 
 __all__ = ["main"]
@@ -72,22 +73,18 @@ class LTTParser(argparse.ArgumentParser):
 
 
 def make_ltt_parser() -> LTTParser:
-    parser = LTTParser(
-        prog="ltt",
-        description=(
-            "Install PyTorch distributions from the stable releases. The computation "
-            "backend  is auto-detected from the available hardware preferring CUDA "
-            "over CPU."
-        ),
-    )
+    parser = LTTParser(prog="ltt")
     parser.add_argument(
-        "-V", "--version", action="store_true", help="show version and exit",
+        "-V",
+        "--version",
+        action="store_true",
+        help="show light-the-torch version and path and exit",
     )
 
-    subparsers = parser.add_subparsers(dest="subcommand")
+    subparsers = parser.add_subparsers(dest="subcommand", title="subcommands")
+    add_ltt_install_parser(subparsers)
     add_ltt_extract_parser(subparsers)
     add_ltt_find_parser(subparsers)
-    add_ltt_install_parser(subparsers)
 
     return parser
 
@@ -95,29 +92,15 @@ def make_ltt_parser() -> LTTParser:
 SubParsers = argparse._SubParsersAction
 
 
-def add_ltt_extract_parser(subparsers: SubParsers) -> None:
-    parser = subparsers.add_parser("extract")
-    LTTParser.add_common_arguments(parser)
-
-
-def add_ltt_find_parser(subparsers: SubParsers) -> None:
-    parser = subparsers.add_parser("find")
-    parser.add_argument(
-        "--computation-backend",
-        type=str,
-        help="pin computation backend, e.g. 'cpu' or 'cu102'",
-    )
-    parser.add_argument(
-        "--platform", type=str, help="",
-    )
-    parser.add_argument(
-        "--python-version", type=str, help="",
-    )
-    LTTParser.add_common_arguments(parser)
-
-
 def add_ltt_install_parser(subparsers: SubParsers) -> None:
-    parser = subparsers.add_parser("install")
+    parser = subparsers.add_parser(
+        "install",
+        description=(
+            "Install PyTorch distributions from the stable releases. The computation "
+            "backend  is auto-detected from the available hardware preferring CUDA "
+            "over CPU."
+        ),
+    )
     parser.add_argument(
         "--force-cpu",
         action="store_true",
@@ -138,3 +121,40 @@ def add_ltt_install_parser(subparsers: SubParsers) -> None:
         ),
     )
     LTTParser.add_common_arguments(parser)
+
+
+def add_ltt_extract_parser(subparsers: SubParsers) -> None:
+    parser = subparsers.add_parser(
+        "extract", description="Extract required PyTorch distributions"
+    )
+    LTTParser.add_common_arguments(parser)
+
+
+def add_ltt_find_parser(subparsers: SubParsers) -> None:
+    parser = subparsers.add_parser(
+        "find", description="Find wheel links for the required PyTorch distributions"
+    )
+    parser.add_argument(
+        "--computation-backend",
+        type=str,
+        help=(
+            "Only use wheels compatible with COMPUTATION_BACKEND, for example 'cu102' "
+            "or 'cpu'. Defaults to the computation backend of the running system, "
+            "preferring CUDA over CPU."
+        ),
+    )
+    add_pip_install_arguments(parser, "platform", "python_version")
+    LTTParser.add_common_arguments(parser)
+
+
+def add_pip_install_arguments(parser: argparse.ArgumentParser, *dests: str) -> None:
+    pip_install_parser = make_pip_install_parser()
+    option_group = pip_install_parser.option_groups[0]
+    for dest in dests:
+        options = [option for option in option_group.option_list if option.dest == dest]
+        assert len(options) == 1
+        option = options[0]
+
+        parser.add_argument(
+            *option._short_opts, *option._long_opts, help=option.help,
+        )
