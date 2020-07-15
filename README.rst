@@ -33,7 +33,7 @@ computation backend is added as a local specifier. For example
 
 .. code-block:: sh
 
-  torch==1.5.1+cu102
+  torch==1.5.1+cpu
 
 Due to this restriction only the wheels of the latest CUDA release are uploaded to
 `PyPI <https://pypi.org/search/?q=torch>`_ and thus easily ``pip install`` able. For
