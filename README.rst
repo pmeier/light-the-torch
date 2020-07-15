@@ -240,6 +240,58 @@ used pin wheel properties instead of auto-detecting them:
   https://download.pytorch.org/whl/cu92/torch-1.5.1%2Bcu92-cp37-cp37m-win_amd64.whl
   https://download.pytorch.org/whl/torchtext-0.6.0-py3-none-any.whl
 
+Python
+------
+
+``light-the-torch`` exposes two functions that can be used from Python:
+
+.. code-block:: python
+
+  import light_the_torch as ltt
+  help(ltt.extract_dists)
+
+.. code-block::
+
+  Help on function extract_dists in module light_the_torch._pip.extract:
+
+  extract_dists(pip_install_args:List[str], verbose:bool=False) -> List[str]
+      Extract direct or indirect required PyTorch distributions.
+
+      Args:
+          pip_install_args: Arguments passed to ``pip install`` that will be searched for
+              required PyTorch distributions
+          verbose: If ``True``, print additional information to STDOUT.
+
+      Returns:
+          Resolved required PyTorch distributions.
+
+.. code-block:: python
+
+  import light_the_torch as ltt
+  help(ltt.find_links)
+
+.. code-block::
+
+  Help on function find_links in module light_the_torch._pip.find:
+
+  find_links(pip_install_args:List[str], computation_backend:Union[str, light_the_torch.computation_backend.ComputationBackend, NoneType]=None, platform:Union[str, NoneType]=None, python_version:Union[str, NoneType]=None, verbose:bool=False) -> List[str]
+      Find wheel links for direct or indirect PyTorch distributions with given
+      properties.
+
+      Args:
+          pip_install_args: Arguments passed to ``pip install`` that will be searched for
+              required PyTorch distributions
+          computation_backend: Computation backend, for example ``"cpu"`` or ``"cu102"``.
+              Defaults to the available hardware of the running system preferring CUDA
+              over CPU.
+          platform: Platform, for example ``"linux_x86_64"`` or ``"win_amd64"``. Defaults
+              to the platform of the running system.
+          python_version: Python version, for example ``"3"`` or ``"3.7"``. Defaults to
+              the version of the running interpreter.
+          verbose: If ``True``, print additional information to STDOUT.
+
+      Returns:
+          Wheel links with given properties for all required PyTorch distributions.
 
 .. note::
 
