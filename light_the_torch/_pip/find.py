@@ -84,7 +84,7 @@ def maybe_add_option(
 
 def maybe_set_required_options(pip_install_args: List[str]) -> List[str]:
     pip_install_args = maybe_add_option(
-        pip_install_args, "-", value=".", aliases=("--target",)
+        pip_install_args, "-t", value=".", aliases=("--target",)
     )
     pip_install_args = maybe_add_option(
         pip_install_args, "--only-binary", value=":all:"
