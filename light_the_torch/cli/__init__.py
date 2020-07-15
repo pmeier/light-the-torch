@@ -156,5 +156,5 @@ def add_pip_install_arguments(parser: argparse.ArgumentParser, *dests: str) -> N
         option = options[0]
 
         parser.add_argument(
-            *option._short_opts, *option._long_opts, help=option.help,
+            *option._short_opts, *option._long_opts, help=option.help,  # type: ignore[attr-defined]
         )
