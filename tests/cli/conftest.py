@@ -13,28 +13,27 @@ def patch_argv(mocker):
 
 
 @pytest.fixture
-def patch_extract_pytorch_dists(mocker):
-    def patch_extract_pytorch_dists_(return_value=None):
+def patch_extract_dists(mocker):
+    def patch_extract_dists_(return_value=None):
         if return_value is None:
             return_value = []
         return mocker.patch(
-            "light_the_torch.cli.commands.ltt.extract_pytorch_dists",
-            return_value=return_value,
+            "light_the_torch.cli.commands.ltt.extract_dists", return_value=return_value,
         )
 
-    return patch_extract_pytorch_dists_
+    return patch_extract_dists_
 
 
 @pytest.fixture
 def patch_find_links(mocker):
-    def patch_extract_pytorch_dists_(return_value=None):
+    def patch_find_links_(return_value=None):
         if return_value is None:
             return_value = []
         return mocker.patch(
             "light_the_torch.cli.commands.ltt.find_links", return_value=return_value,
         )
 
-    return patch_extract_pytorch_dists_
+    return patch_find_links_
 
 
 @pytest.fixture

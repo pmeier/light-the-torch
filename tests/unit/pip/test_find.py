@@ -9,7 +9,7 @@ from light_the_torch._pip.find import PytorchCandidatePreferences
 
 
 def test_find_links_internal_error(mocker):
-    mocker.patch("light_the_torch._pip.find.extract_pytorch_dists", return_value=[])
+    mocker.patch("light_the_torch._pip.find.extract_dists", return_value=[])
     mocker.patch("light_the_torch._pip.find.run")
 
     with pytest.raises(InternalLTTError):

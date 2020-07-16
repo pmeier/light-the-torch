@@ -5,11 +5,11 @@ from light_the_torch._pip import extract
 from light_the_torch._pip.common import InternalLTTError
 
 
-def test_extract_pytorch_dists_internal_error(mocker):
+def test_extract_dists_internal_error(mocker):
     mocker.patch("light_the_torch._pip.extract.run")
 
     with pytest.raises(InternalLTTError):
-        ltt.extract_pytorch_dists(["foo"])
+        ltt.extract_dists(["foo"])
 
 
 def test_StopAfterPytorchDistsFoundResolver_no_torch(mocker):
@@ -22,12 +22,12 @@ def test_StopAfterPytorchDistsFoundResolver_no_torch(mocker):
 
 
 @pytest.mark.slow
-def test_extract_pytorch_dists_ltt():
-    assert ltt.extract_pytorch_dists(["light-the-torch"]) == []
+def test_extract_dists_ltt():
+    assert ltt.extract_dists(["light-the-torch"]) == []
 
 
 @pytest.mark.slow
-def test_extract_pytorch_dists_pystiche(subtests):
+def test_extract_dists_pystiche(subtests):
     pystiche = "git+https://github.com/pmeier/pystiche@v{}"
     reqs_and_dists = (
         (pystiche.format("0.4.0"), {"torch>=1.4.0", "torchvision>=0.5.0"}),
@@ -35,11 +35,11 @@ def test_extract_pytorch_dists_pystiche(subtests):
     )
     for req, dists in reqs_and_dists:
         with subtests.test(req=req):
-            assert set(ltt.extract_pytorch_dists([req])) == dists
+            assert set(ltt.extract_dists([req])) == dists
 
 
 @pytest.mark.slow
-def test_extract_pytorch_dists_kornia(subtests):
+def test_extract_dists_kornia(subtests):
     kornia = "kornia=={}"
     reqs_and_dists = (
         (kornia.format("0.2.2"), {"torch<=1.4.0,>=1.0.0"}),
@@ -47,4 +47,4 @@ def test_extract_pytorch_dists_kornia(subtests):
     )
     for req, dists in reqs_and_dists:
         with subtests.test(req=req):
-            assert set(ltt.extract_pytorch_dists([req])) == dists
+            assert set(ltt.extract_dists([req])) == dists

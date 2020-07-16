@@ -22,7 +22,7 @@ from .common import (
     new_from_similar,
     run,
 )
-from .extract import extract_pytorch_dists
+from .extract import extract_dists
 
 __all__ = ["find_links"]
 
@@ -34,10 +34,28 @@ def find_links(
     python_version: Optional[str] = None,
     verbose: bool = False,
 ) -> List[str]:
+    """Find wheel links for direct or indirect PyTorch distributions with given
+    properties.
+
+    Args:
+        pip_install_args: Arguments passed to ``pip install`` that will be searched for
+            required PyTorch distributions
+        computation_backend: Computation backend, for example ``"cpu"`` or ``"cu102"``.
+            Defaults to the available hardware of the running system preferring CUDA
+            over CPU.
+        platform: Platform, for example ``"linux_x86_64"`` or ``"win_amd64"``. Defaults
+            to the platform of the running system.
+        python_version: Python version, for example ``"3"`` or ``"3.7"``. Defaults to
+            the version of the running interpreter.
+        verbose: If ``True``, print additional information to STDOUT.
+
+    Returns:
+        Wheel links with given properties for all required PyTorch distributions.
+    """
     if isinstance(computation_backend, str):
         computation_backend = ComputationBackend.from_str(computation_backend)
 
-    dists = extract_pytorch_dists(pip_install_args)
+    dists = extract_dists(pip_install_args)
 
     cmd = StopAfterPytorchLinksFoundCommand(computation_backend=computation_backend)
     pip_install_args = adjust_pip_install_args(dists, platform, python_version)
