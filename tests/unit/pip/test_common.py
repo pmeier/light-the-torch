@@ -1,6 +1,22 @@
+import itertools
+import optparse
+
 import pytest
 
 from light_the_torch._pip import common
+
+
+def test_get_verbosity(subtests):
+    verboses = tuple(range(4))
+    quiets = tuple(range(4))
+
+    for verbose, quiet in itertools.product(verboses, quiets):
+        with subtests.test(verbose=verbose, quiet=quiet):
+            options = optparse.Values({"verbose": verbose, "quiet": quiet})
+            verbosity = verbose - quiet
+
+            assert common.get_verbosity(options, verbose=True) == verbosity
+            assert common.get_verbosity(options, verbose=False) == -1
 
 
 def test_get_public_or_private_attr_public_and_private():

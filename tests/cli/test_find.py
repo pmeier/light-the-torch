@@ -43,3 +43,10 @@ def test_ltt_find_verbose(patch_find_argv, patch_find_links):
     _, kwargs = find_links.call_args
     assert "verbose" in kwargs
     assert kwargs["verbose"]
+
+
+def test_find_unrecognized_argument(patch_find_argv):
+    patch_find_argv("--unrecognized-argument")
+
+    with exits(error=True):
+        cli.main()

@@ -78,7 +78,7 @@ def adjust_pip_install_args(
         pip_install_args = maybe_add_option(
             pip_install_args, "--platform", value=platform
         )
-    if platform is not None:
+    if python_version is not None:
         pip_install_args = maybe_add_option(
             pip_install_args, "--python-version", value=python_version
         )
