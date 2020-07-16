@@ -14,7 +14,7 @@ light-the-torch
       - |tests| |coverage|
 
 .. end-badges
-   
+
 ``light-the-torch`` offers a small CLI (and
 `tox plugin <https://github.com/pmeier/tox-ltt>`_) based on ``pip`` to install PyTorch
 distributions from the stable releases. Similar to the platform and Python version, the
