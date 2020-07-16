@@ -5,13 +5,6 @@ from light_the_torch._pip import extract
 from light_the_torch._pip.common import InternalLTTError
 
 
-def test_extract_dists_internal_error(mocker):
-    mocker.patch("light_the_torch._pip.extract.run")
-
-    with pytest.raises(InternalLTTError):
-        ltt.extract_dists(["foo"])
-
-
 def test_StopAfterPytorchDistsFoundResolver_no_torch(mocker):
     mocker.patch(
         "light_the_torch._pip.extract.PatchedResolverBase.__init__", return_value=None
@@ -21,11 +14,11 @@ def test_StopAfterPytorchDistsFoundResolver_no_torch(mocker):
     assert "torch" in resolver.required_pytorch_dists
 
 
-def test_extract_pytorch_dists_internal_error(mocker):
+def test_extract_pytorch_internal_error(mocker):
     mocker.patch("light_the_torch._pip.extract.run")
 
     with pytest.raises(InternalLTTError):
-        ltt.extract_pytorch_dists(["foo"])
+        ltt.extract_dists(["foo"])
 
 
 @pytest.mark.slow

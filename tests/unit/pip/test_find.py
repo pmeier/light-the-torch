@@ -8,11 +8,16 @@ from light_the_torch._pip.find import PytorchCandidatePreferences, maybe_add_opt
 from light_the_torch.computation_backend import ComputationBackend
 
 
-def test_find_links_internal_error(mocker):
-    mocker.patch("light_the_torch._pip.find.extract_dists", return_value=[])
-    mocker.patch("light_the_torch._pip.find.run")
+@pytest.fixture
+def patch_extract_dists(mocker):
+    def patch_extract_dists_(return_value=None):
+        if return_value is None:
+            return_value = []
+        return mocker.patch(
+            "light_the_torch._pip.find.extract_dists", return_value=return_value
+        )
 
-    return patch_extract_pytorch_dists_
+    return patch_extract_dists_
 
 
 @pytest.fixture
@@ -79,8 +84,8 @@ def test_PytorchCandidatePreferences_detect_computation_backend(mocker):
     assert candidate_prefs.computation_backend is computation_backend
 
 
-def test_find_links_internal_error(patch_extract_pytorch_dists, patch_run):
-    patch_extract_pytorch_dists()
+def test_find_links_internal_error(patch_extract_dists, patch_run):
+    patch_extract_dists()
     patch_run()
 
     with pytest.raises(InternalLTTError):
@@ -88,9 +93,9 @@ def test_find_links_internal_error(patch_extract_pytorch_dists, patch_run):
 
 
 def test_find_links_computation_backend(
-    subtests, patch_extract_pytorch_dists, patch_run, computation_backends
+    subtests, patch_extract_dists, patch_run, computation_backends
 ):
-    patch_extract_pytorch_dists()
+    patch_extract_dists()
     run = patch_run()
 
     for computation_backend in computation_backends:
@@ -107,10 +112,8 @@ def test_find_links_computation_backend(
             )
 
 
-def test_find_links_platform(
-    subtests, patch_extract_pytorch_dists, patch_run, platforms
-):
-    patch_extract_pytorch_dists()
+def test_find_links_platform(subtests, patch_extract_dists, patch_run, platforms):
+    patch_extract_dists()
     run = patch_run()
 
     for platform in platforms:
@@ -126,9 +129,9 @@ def test_find_links_platform(
 
 
 def test_find_links_python_version(
-    subtests, patch_extract_pytorch_dists, patch_run, python_versions
+    subtests, patch_extract_dists, patch_run, python_versions
 ):
-    patch_extract_pytorch_dists()
+    patch_extract_dists()
     run = patch_run()
 
     for python_version in python_versions:
