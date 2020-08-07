@@ -17,6 +17,9 @@ on:
       - "requirements-dev.txt"
       - ".github/workflows/tests.yml"
 
+  schedule:
+    - cron: "0 4 * * *"
+
 jobs:
   unit:
     strategy:
