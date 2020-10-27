@@ -14,6 +14,15 @@ def test_StopAfterPytorchDistsFoundResolver_no_torch(mocker):
     assert "torch" in resolver.required_pytorch_dists
 
 
+def test_StopAfterPytorchDistsFoundResolver_torch_compatibility(mocker):
+    mocker.patch(
+        "light_the_torch._pip.extract.PatchedResolverBase.__init__", return_value=None
+    )
+    resolver = extract.StopAfterPytorchDistsFoundResolver()
+    resolver._required_pytorch_dists = ["torchvision==0.7"]
+    assert "torch==1.6.0" in resolver.required_pytorch_dists
+
+
 def test_extract_pytorch_internal_error(mocker):
     mocker.patch("light_the_torch._pip.extract.run")
 

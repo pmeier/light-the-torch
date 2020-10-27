@@ -1,9 +1,11 @@
+import contextlib
 import re
 from typing import Any, List, NoReturn, cast
 
 from pip._internal.req.req_install import InstallRequirement
 from pip._internal.req.req_set import RequirementSet
 
+from ..compatibility import find_compatible_torch_version
 from .common import InternalLTTError, PatchedInstallCommand, PatchedResolverBase, run
 
 __all__ = ["extract_dists"]
@@ -75,7 +77,18 @@ class StopAfterPytorchDistsFoundResolver(PatchedResolverBase):
             return []
 
         if not any(self._pytorch_core_pattern.match(dist) for dist in dists):
-            dists.insert(0, self.PYTORCH_CORE)
+            torch = self.PYTORCH_CORE
+
+            with contextlib.suppress(RuntimeError):
+                torch_versions = {
+                    find_compatible_torch_version(*dist.split("=="))
+                    for dist in dists
+                    if "==" in dist
+                }
+                if len(torch_versions) == 1:
+                    torch = f"{torch}=={torch_versions.pop()}"
+
+            dists.insert(0, torch)
 
         return dists
 
