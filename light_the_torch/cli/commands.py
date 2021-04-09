@@ -1,6 +1,7 @@
 import argparse
 import subprocess
 import sys
+import warnings
 from abc import ABC, abstractmethod
 from os import path
 from typing import Dict, List, NoReturn, Optional, Type
@@ -91,8 +92,15 @@ class InstallCommand(Command):
             channel=self.channel,
             verbose=self.verbose,
         )
-        cmd = self.install_cmd.format(packages=" ".join(links))
-        subprocess.check_call(cmd, shell=True)
+        if links:
+            cmd = self.install_cmd.format(packages=" ".join(links))
+            subprocess.check_call(cmd, shell=True)
+        else:
+            warnings.warn(
+                f"Didn't find any PyTorch distribution in "
+                f"'{' '.join(pip_install_args)}'",
+                RuntimeWarning,
+            )
 
         if self.pytorch_only:
             self.exit()
