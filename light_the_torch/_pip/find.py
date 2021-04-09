@@ -52,7 +52,9 @@ def find_links(
     Returns:
         Wheel links with given properties for all required PyTorch distributions.
     """
-    if isinstance(computation_backend, str):
+    if computation_backend is None:
+        computation_backend = detect_computation_backend()
+    elif isinstance(computation_backend, str):
         computation_backend = ComputationBackend.from_str(computation_backend)
 
     dists = extract_dists(pip_install_args)
@@ -159,21 +161,16 @@ class PytorchLinkEvaluator(LinkEvaluator):
 
 class PytorchCandidatePreferences(CandidatePreferences):
     def __init__(
-        self,
-        *args: Any,
-        computation_backend: Optional[ComputationBackend] = None,
-        **kwargs: Any,
+        self, *args: Any, computation_backend: ComputationBackend, **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        if computation_backend is None:
-            computation_backend = detect_computation_backend()
         self.computation_backend = computation_backend
 
     @classmethod
     def from_candidate_preferences(
         cls,
         candidate_preferences: CandidatePreferences,
-        computation_backend: Optional[ComputationBackend] = None,
+        computation_backend: ComputationBackend,
     ) -> "PytorchCandidatePreferences":
         return new_from_similar(
             cls,
@@ -185,10 +182,7 @@ class PytorchCandidatePreferences(CandidatePreferences):
 
 class PytorchCandidateEvaluator(CandidateEvaluator):
     def __init__(
-        self,
-        *args: Any,
-        computation_backend: Optional[ComputationBackend] = None,
-        **kwargs: Any,
+        self, *args: Any, computation_backend: ComputationBackend, **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.computation_backend = computation_backend
@@ -197,7 +191,7 @@ class PytorchCandidateEvaluator(CandidateEvaluator):
     def from_candidate_evaluator(
         cls,
         candidate_evaluator: CandidateEvaluator,
-        computation_backend: Optional[ComputationBackend] = None,
+        computation_backend: ComputationBackend,
     ) -> "PytorchCandidateEvaluator":
         return new_from_similar(
             cls,
@@ -246,10 +240,7 @@ class PytorchPackageFinder(PackageFinder):
     _link_collector: PytorchLinkCollector
 
     def __init__(
-        self,
-        *args: Any,
-        computation_backend: Optional[ComputationBackend] = None,
-        **kwargs: Any,
+        self, *args: Any, computation_backend: ComputationBackend, **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self._candidate_prefs = PytorchCandidatePreferences.from_candidate_preferences(
@@ -274,9 +265,7 @@ class PytorchPackageFinder(PackageFinder):
 
     @classmethod
     def from_package_finder(
-        cls,
-        package_finder: PackageFinder,
-        computation_backend: Optional[ComputationBackend] = None,
+        cls, package_finder: PackageFinder, computation_backend: ComputationBackend,
     ) -> "PytorchPackageFinder":
         return new_from_similar(
             cls,
@@ -309,9 +298,7 @@ class StopAfterPytorchLinksFoundResolver(PatchedResolverBase):
 
 
 class StopAfterPytorchLinksFoundCommand(PatchedInstallCommand):
-    def __init__(
-        self, computation_backend: Optional[ComputationBackend] = None, **kwargs: Any,
-    ) -> None:
+    def __init__(self, computation_backend: ComputationBackend, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.computation_backend = computation_backend
 

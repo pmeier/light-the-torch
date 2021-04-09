@@ -4,7 +4,7 @@ import pytest
 
 import light_the_torch as ltt
 from light_the_torch._pip.common import InternalLTTError
-from light_the_torch._pip.find import PytorchCandidatePreferences, maybe_add_option
+from light_the_torch._pip.find import maybe_add_option
 from light_the_torch.computation_backend import ComputationBackend
 
 
@@ -68,7 +68,15 @@ def test_maybe_add_option_already_set(subtests):
     assert maybe_add_option(args, "-f", aliases=("--foo",)) == args
 
 
-def test_PytorchCandidatePreferences_detect_computation_backend(mocker):
+def test_find_links_internal_error(patch_extract_dists, patch_run):
+    patch_extract_dists()
+    patch_run()
+
+    with pytest.raises(InternalLTTError):
+        ltt.find_links([])
+
+
+def test_find_links_computation_backend_detect(mocker, patch_extract_dists, patch_run):
     class GenericComputationBackend(ComputationBackend):
         @property
         def local_specifier(self):
@@ -80,19 +88,18 @@ def test_PytorchCandidatePreferences_detect_computation_backend(mocker):
         return_value=computation_backend,
     )
 
-    candidate_prefs = PytorchCandidatePreferences()
-    assert candidate_prefs.computation_backend is computation_backend
-
-
-def test_find_links_internal_error(patch_extract_dists, patch_run):
     patch_extract_dists()
-    patch_run()
+    run = patch_run()
 
     with pytest.raises(InternalLTTError):
-        ltt.find_links([])
+        ltt.find_links([], computation_backend=None)
+
+    args, _ = run.call_args
+    cmd = args[0]
+    assert cmd.computation_backend == computation_backend
 
 
-def test_find_links_computation_backend(
+def test_find_links_computation_backend_str(
     subtests, patch_extract_dists, patch_run, computation_backends
 ):
     patch_extract_dists()
