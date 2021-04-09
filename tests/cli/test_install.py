@@ -92,6 +92,24 @@ def test_ltt_install_pytorch_only(
     collect_packages.assert_not_called()
 
 
+def test_ltt_install_channel(
+    patch_install_argv, patch_find_links, patch_subprocess_call, patch_collect_packages,
+):
+    channel = "channel"
+
+    patch_install_argv(f"--channel={channel}")
+    find_links = patch_find_links()
+    patch_subprocess_call()
+    patch_collect_packages()
+
+    with exits():
+        cli.main()
+
+    _, kwargs = find_links.call_args
+    assert "channel" in kwargs
+    assert kwargs["channel"] == channel
+
+
 def test_ltt_install_install_cmd(
     patch_install_argv, patch_find_links, patch_subprocess_call,
 ):

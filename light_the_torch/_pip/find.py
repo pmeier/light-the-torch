@@ -30,6 +30,7 @@ __all__ = ["find_links"]
 def find_links(
     pip_install_args: List[str],
     computation_backend: Optional[Union[str, ComputationBackend]] = None,
+    channel: str = "stable",
     platform: Optional[str] = None,
     python_version: Optional[str] = None,
     verbose: bool = False,
@@ -43,6 +44,8 @@ def find_links(
         computation_backend: Computation backend, for example ``"cpu"`` or ``"cu102"``.
             Defaults to the available hardware of the running system preferring CUDA
             over CPU.
+        channel: Channel of the PyTorch wheels. Can be one of ``"stable"`` (default),
+            ``"test"``, and ``"nightly"``.
         platform: Platform, for example ``"linux_x86_64"`` or ``"win_amd64"``. Defaults
             to the platform of the running system.
         python_version: Python version, for example ``"3"`` or ``"3.7"``. Defaults to
@@ -57,9 +60,17 @@ def find_links(
     elif isinstance(computation_backend, str):
         computation_backend = ComputationBackend.from_str(computation_backend)
 
+    if channel not in ("stable", "test", "nightly"):
+        raise ValueError(
+            f"channel can be one of 'stable', 'test', or 'nightly', "
+            f"but got {channel} instead."
+        )
+
     dists = extract_dists(pip_install_args)
 
-    cmd = StopAfterPytorchLinksFoundCommand(computation_backend=computation_backend)
+    cmd = StopAfterPytorchLinksFoundCommand(
+        computation_backend=computation_backend, channel=channel
+    )
     pip_install_args = adjust_pip_install_args(dists, platform, python_version)
     options, args = cmd.parser.parse_args(pip_install_args)
     try:
@@ -222,17 +233,34 @@ class PytorchLinkCollector(LinkCollector):
     def __init__(
         self,
         *args: Any,
-        url: str = "https://download.pytorch.org/whl/torch_stable.html",
+        computation_backend: ComputationBackend,
+        channel: str = "stable",
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
+        if channel == "stable":
+            url = "https://download.pytorch.org/whl/torch_stable.html"
+        else:
+            url = (
+                f"https://download.pytorch.org/whl/"
+                f"{channel}/{computation_backend}/torch_{channel}.html"
+            )
         self.search_scope = SearchScope.create(find_links=[url], index_urls=[])
 
     @classmethod
     def from_link_collector(
-        cls, link_collector: LinkCollector
+        cls,
+        link_collector: LinkCollector,
+        computation_backend: ComputationBackend,
+        channel: str = "stable",
     ) -> "PytorchLinkCollector":
-        return new_from_similar(cls, link_collector, ("session", "search_scope",),)
+        return new_from_similar(
+            cls,
+            link_collector,
+            ("session", "search_scope",),
+            channel=channel,
+            computation_backend=computation_backend,
+        )
 
 
 class PytorchPackageFinder(PackageFinder):
@@ -240,14 +268,20 @@ class PytorchPackageFinder(PackageFinder):
     _link_collector: PytorchLinkCollector
 
     def __init__(
-        self, *args: Any, computation_backend: ComputationBackend, **kwargs: Any,
+        self,
+        *args: Any,
+        computation_backend: ComputationBackend,
+        channel: str = "stable",
+        **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self._candidate_prefs = PytorchCandidatePreferences.from_candidate_preferences(
             self._candidate_prefs, computation_backend=computation_backend
         )
         self._link_collector = PytorchLinkCollector.from_link_collector(
-            self._link_collector
+            self._link_collector,
+            channel=channel,
+            computation_backend=computation_backend,
         )
 
     def make_candidate_evaluator(
@@ -265,7 +299,10 @@ class PytorchPackageFinder(PackageFinder):
 
     @classmethod
     def from_package_finder(
-        cls, package_finder: PackageFinder, computation_backend: ComputationBackend,
+        cls,
+        package_finder: PackageFinder,
+        computation_backend: ComputationBackend,
+        channel: str = "stable",
     ) -> "PytorchPackageFinder":
         return new_from_similar(
             cls,
@@ -279,6 +316,7 @@ class PytorchPackageFinder(PackageFinder):
                 "ignore_requires_python",
             ),
             computation_backend=computation_backend,
+            channel=channel,
         )
 
 
@@ -298,14 +336,22 @@ class StopAfterPytorchLinksFoundResolver(PatchedResolverBase):
 
 
 class StopAfterPytorchLinksFoundCommand(PatchedInstallCommand):
-    def __init__(self, computation_backend: ComputationBackend, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        computation_backend: ComputationBackend,
+        channel: str = "stable",
+        **kwargs: Any,
+    ) -> None:
         super().__init__(**kwargs)
         self.computation_backend = computation_backend
+        self.channel = channel
 
     def _build_package_finder(self, *args: Any, **kwargs: Any) -> PytorchPackageFinder:
         package_finder = super()._build_package_finder(*args, **kwargs)
         return PytorchPackageFinder.from_package_finder(
-            package_finder, computation_backend=self.computation_backend
+            package_finder,
+            computation_backend=self.computation_backend,
+            channel=self.channel,
         )
 
     def make_resolver(

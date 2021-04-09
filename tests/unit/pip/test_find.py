@@ -34,6 +34,11 @@ def computation_backends():
 
 
 @pytest.fixture
+def channels():
+    return ("stable", "test", "nightly")
+
+
+@pytest.fixture
 def platforms():
     return ("linux_x86_64", "macosx_10_9_x86_64", "win_amd64")
 
@@ -119,6 +124,11 @@ def test_find_links_computation_backend_str(
             )
 
 
+def test_find_links_unknown_channel():
+    with pytest.raises(ValueError):
+        ltt.find_links([], channel="channel")
+
+
 def test_find_links_platform(subtests, patch_extract_dists, patch_run, platforms):
     patch_extract_dists()
     run = patch_run()
@@ -192,3 +202,12 @@ def test_find_links_torchvision_smoke(subtests, wheel_properties):
     for properties in wheel_properties:
         with subtests.test(**properties):
             assert ltt.find_links([dist], **properties)
+
+
+@pytest.mark.slow
+def test_find_links_torch_channel_smoke(subtests, channels):
+    dist = "torch"
+
+    for channel in channels:
+        with subtests.test(channel=channel):
+            assert ltt.find_links([dist], computation_backend="cpu", channel=channel)
