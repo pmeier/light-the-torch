@@ -76,6 +76,10 @@ class StopAfterPytorchDistsFoundResolver(PatchedResolverBase):
         if not dists:
             return []
 
+        # If the distribution was found in an extra requirement, pip appends this as
+        # additional information. We remove that here.
+        dists = [dist.split(";")[0] for dist in dists]
+
         if not any(self._pytorch_core_pattern.match(dist) for dist in dists):
             torch = self.PYTORCH_CORE
 
