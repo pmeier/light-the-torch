@@ -112,6 +112,15 @@ def add_ltt_install_parser(subparsers: SubParsers) -> None:
         help="install only PyTorch distributions",
     )
     parser.add_argument(
+        "--channel",
+        type=str,
+        default="stable",
+        help=(
+            "Channel of the PyTorch wheels. "
+            "Can be one of 'stable' (default), 'test', or 'nightly'"
+        ),
+    )
+    parser.add_argument(
         "--install-cmd",
         type=str,
         default="python -m pip install {packages}",
@@ -141,6 +150,15 @@ def add_ltt_find_parser(subparsers: SubParsers) -> None:
             "Only use wheels compatible with COMPUTATION_BACKEND, for example 'cu102' "
             "or 'cpu'. Defaults to the computation backend of the running system, "
             "preferring CUDA over CPU."
+        ),
+    )
+    parser.add_argument(
+        "--channel",
+        type=str,
+        default="stable",
+        help=(
+            "Channel of the PyTorch wheels. "
+            "Can be one of 'stable' (default), 'test', or 'nightly'"
         ),
     )
     add_pip_install_arguments(parser, "platform", "python_version")
