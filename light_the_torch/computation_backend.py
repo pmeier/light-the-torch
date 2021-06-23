@@ -84,6 +84,9 @@ def detect_nvidia_driver() -> str:
             stderr=subprocess.DEVNULL,
         )
         driver = output.decode("utf-8").splitlines()[-1]
+        pattern = re.compile(r'(\d+\.\d+)')
+        if not pattern.match(driver):
+            driver = None
     except subprocess.CalledProcessError:
         driver = None
     return driver
