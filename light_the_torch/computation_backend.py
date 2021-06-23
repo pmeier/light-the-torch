@@ -1,3 +1,4 @@
+import os
 import re
 import subprocess
 from abc import ABC, abstractmethod
@@ -75,24 +76,57 @@ class CUDABackend(ComputationBackend):
         return f"cu{self.major}{self.minor}"
 
 
-NVCC_RELEASE_PATTERN = re.compile(r"release (?P<major>\d+)[.](?P<minor>\d+)")
+def detect_nvidia_driver() -> str:
+    try:
+        output = subprocess.check_output(
+            "nvidia-smi --query-gpu=driver_version --format=csv",
+            shell=True,
+            stderr=subprocess.DEVNULL,
+        )
+        driver = output.decode("utf-8").splitlines()[-1]
+    except subprocess.CalledProcessError:
+        driver = None
+    return driver
+
+
+def get_supported_cuda_version() -> str:
+    nvidia_driver = detect_nvidia_driver()
+    if nvidia_driver is None:
+        return None
+
+    cuda_version = None
+    if os.name == 'nt':  # windows
+        # Table 3 from https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html
+        if nvidia_driver >= '456.38':
+            cuda_version = '11.1'
+        elif nvidia_driver >= '451.22':
+            cuda_version = '11.0'
+        elif nvidia_driver >= '441.22':
+            cuda_version = '10.2'
+        elif nvidia_driver >= '418.96':
+            cuda_version = '10.1'
+        elif nvidia_driver >= '398.26':
+            cuda_version = '9.2'
+    else:  # linux
+        # Table 1 from https://docs.nvidia.com/deploy/cuda-compatibility/index.html
+        if nvidia_driver >= '450.80.02':
+            cuda_version = '11.1'
+        elif nvidia_driver >= '450.36.06':
+            cuda_version = '11.0'
+        elif nvidia_driver >= '440.33':
+            cuda_version = '10.2'
+        elif nvidia_driver >= '418.39':
+            cuda_version = '10.1'
+        elif nvidia_driver >= '396.26':
+            cuda_version = '9.2'
+    return cuda_version
 
 
 def detect_computation_backend() -> ComputationBackend:
-    fallback = CPUBackend()
-    try:
-        output = (
-            subprocess.check_output(
-                "nvcc --version", shell=True, stderr=subprocess.DEVNULL,
-            )
-            .decode("utf-8")
-            .strip()
-        )
-        match = NVCC_RELEASE_PATTERN.findall(output)
-        if not match:
-            return fallback
-
-        major, minor = match[0]
-        return CUDABackend(int(major), int(minor))
-    except subprocess.CalledProcessError:
-        return fallback
+    cuda_version = get_supported_cuda_version()
+    if cuda_version is None:
+        backend = CPUBackend()
+    else:
+        major, minor = cuda_version.split('.')
+        backend = CUDABackend(int(major), int(minor))
+    return backend
