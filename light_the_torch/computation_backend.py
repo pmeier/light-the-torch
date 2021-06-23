@@ -84,7 +84,7 @@ def detect_nvidia_driver() -> str:
             stderr=subprocess.DEVNULL,
         )
         driver = output.decode("utf-8").splitlines()[-1]
-        pattern = re.compile(r'(\d+\.\d+)')  # match at least major and minor
+        pattern = re.compile(r"(\d+\.\d+)")  # match at least major and minor
         if not pattern.match(driver):
             driver = None
     except subprocess.CalledProcessError:
@@ -93,9 +93,8 @@ def detect_nvidia_driver() -> str:
 
 
 def get_supported_cuda_version() -> str:
-
     def split(version_string):
-        return [int(n) for n in version_string.split('.')]
+        return [int(n) for n in version_string.split(".")]
 
     nvidia_driver = detect_nvidia_driver()
     if nvidia_driver is None:
@@ -103,30 +102,30 @@ def get_supported_cuda_version() -> str:
 
     nvidia_driver = split(nvidia_driver)
     cuda_version = None
-    if os.name == 'nt':  # windows
+    if os.name == "nt":  # windows
         # Table 3 from https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html
-        if nvidia_driver >= split('456.38'):
-            cuda_version = '11.1'
-        elif nvidia_driver >= split('451.22'):
-            cuda_version = '11.0'
-        elif nvidia_driver >= split('441.22'):
-            cuda_version = '10.2'
-        elif nvidia_driver >= split('418.96'):
-            cuda_version = '10.1'
-        elif nvidia_driver >= split('398.26'):
-            cuda_version = '9.2'
+        if nvidia_driver >= split("456.38"):
+            cuda_version = "11.1"
+        elif nvidia_driver >= split("451.22"):
+            cuda_version = "11.0"
+        elif nvidia_driver >= split("441.22"):
+            cuda_version = "10.2"
+        elif nvidia_driver >= split("418.96"):
+            cuda_version = "10.1"
+        elif nvidia_driver >= split("398.26"):
+            cuda_version = "9.2"
     else:  # linux
         # Table 1 from https://docs.nvidia.com/deploy/cuda-compatibility/index.html
-        if nvidia_driver >= split('450.80.02'):
-            cuda_version = '11.1'
-        elif nvidia_driver >= split('450.36.06'):
-            cuda_version = '11.0'
-        elif nvidia_driver >= split('440.33'):
-            cuda_version = '10.2'
-        elif nvidia_driver >= split('418.39'):
-            cuda_version = '10.1'
-        elif nvidia_driver >= split('396.26'):
-            cuda_version = '9.2'
+        if nvidia_driver >= split("450.80.02"):
+            cuda_version = "11.1"
+        elif nvidia_driver >= split("450.36.06"):
+            cuda_version = "11.0"
+        elif nvidia_driver >= split("440.33"):
+            cuda_version = "10.2"
+        elif nvidia_driver >= split("418.39"):
+            cuda_version = "10.1"
+        elif nvidia_driver >= split("396.26"):
+            cuda_version = "9.2"
     return cuda_version
 
 
@@ -135,6 +134,6 @@ def detect_computation_backend() -> ComputationBackend:
     if cuda_version is None:
         backend = CPUBackend()
     else:
-        major, minor = cuda_version.split('.')
+        major, minor = cuda_version.split(".")
         backend = CUDABackend(int(major), int(minor))
     return backend
