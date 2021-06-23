@@ -2,7 +2,7 @@ import os
 import re
 import subprocess
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, List, Optional
 
 __all__ = [
     "ComputationBackend",
@@ -76,7 +76,8 @@ class CUDABackend(ComputationBackend):
         return f"cu{self.major}{self.minor}"
 
 
-def detect_nvidia_driver() -> str:
+def detect_nvidia_driver() -> Optional[str]:
+    driver: Optional[str]
     try:
         output = subprocess.check_output(
             "nvidia-smi --query-gpu=driver_version --format=csv",
@@ -92,8 +93,8 @@ def detect_nvidia_driver() -> str:
     return driver
 
 
-def get_supported_cuda_version() -> str:
-    def split(version_string):
+def get_supported_cuda_version() -> Optional[str]:
+    def split(version_string: str) -> List[int]:
         return [int(n) for n in version_string.split(".")]
 
     nvidia_driver = detect_nvidia_driver()
@@ -132,8 +133,7 @@ def get_supported_cuda_version() -> str:
 def detect_computation_backend() -> ComputationBackend:
     cuda_version = get_supported_cuda_version()
     if cuda_version is None:
-        backend = CPUBackend()
+        return CPUBackend()
     else:
         major, minor = cuda_version.split(".")
-        backend = CUDABackend(int(major), int(minor))
-    return backend
+        return CUDABackend(int(major), int(minor))
