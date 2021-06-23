@@ -107,17 +107,18 @@ def test_detect_computation_backend_unknown_release(mocker):
 
 
 def test_detect_computation_backend_cuda(mocker):
-    major = 42
-    minor = 21
+    major = 460
+    minor = 20
+    patch = 30
     mocker.patch(
         "light_the_torch.computation_backend.subprocess.check_output",
-        return_value=f"foo\nbar, release {major}.{minor}, baz".encode("utf-8"),
+        return_value=f"foo\n{major}.{minor}.{patch}".encode("utf-8"),
     )
 
     backend = cb.detect_computation_backend()
     assert isinstance(backend, cb.CUDABackend)
-    assert backend.major == major
-    assert backend.minor == minor
+    assert backend.major == 11
+    assert backend.minor == 1
 
 
 @skip_if_cuda_unavailable
