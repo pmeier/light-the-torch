@@ -118,7 +118,7 @@ def _detect_nvidia_driver_version() -> Optional[Version]:
     cmd = "nvidia-smi --query-gpu=driver_version --format=csv"
     try:
         output = (
-            subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL,)
+            subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL)
             .decode("utf-8")
             .strip()
         )

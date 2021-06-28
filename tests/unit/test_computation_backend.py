@@ -62,15 +62,15 @@ class TestCUDABackend:
 
 try:
     subprocess.check_call(
-        "nvidia-smi", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        "nvidia-smi", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
-    CUDA_AVAILABLE = True
+    NVIDIA_DRIVER_AVAILABLE = True
 except subprocess.CalledProcessError:
-    CUDA_AVAILABLE = False
+    NVIDIA_DRIVER_AVAILABLE = False
 
 
-skip_if_cuda_unavailable = pytest.mark.skipif(
-    not CUDA_AVAILABLE, reason="Requires CUDA."
+skip_if_nvidia_driver_unavailable = pytest.mark.skipif(
+    not NVIDIA_DRIVER_AVAILABLE, reason="Requires nVidia driver."
 )
 
 
@@ -155,7 +155,7 @@ class TestDetectCompatibleComputationBackends:
         backends = cb.detect_compatible_computation_backends()
         assert backends == {cb.CPUBackend(), *compatible_cuda_backends}
 
-    @skip_if_cuda_unavailable
+    @skip_if_nvidia_driver_unavailable
     def test_cuda_backend(self):
         backend_types = {
             type(backend) for backend in cb.detect_compatible_computation_backends()
