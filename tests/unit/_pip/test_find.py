@@ -140,6 +140,14 @@ def wheel_properties():
                 )
                 for cuda_version in cuda_versions
                 for python_version in SUPPORTED_PYTHON_VERSIONS[cuda_version]
+                if not (
+                    platform == "win_amd64"
+                    and (
+                        (cuda_version == Version("7.5") and python_version == "3.6")
+                        or (cuda_version == Version("9.2") and python_version == "3.9")
+                        or (cuda_version == Version("10.0") and python_version == "3.8")
+                    )
+                )
             ]
         )
 
