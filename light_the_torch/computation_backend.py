@@ -5,7 +5,6 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional, Set
 
 from pip._vendor.packaging.version import InvalidVersion, Version
-from pip._vendor.packaging.version import parse as parse_version
 
 __all__ = [
     "ComputationBackend",
@@ -91,7 +90,7 @@ class CPUBackend(ComputationBackend):
         if not isinstance(other, ComputationBackend):
             return NotImplemented
 
-        return False
+        return True
 
 
 class CUDABackend(ComputationBackend):
@@ -122,7 +121,7 @@ def _detect_nvidia_driver_version() -> Optional[Version]:
             .decode("utf-8")
             .strip()
         )
-        return parse_version(output.splitlines()[-1])
+        return Version(output.splitlines()[-1])
     except (subprocess.CalledProcessError, InvalidVersion):
         return None
 

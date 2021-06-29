@@ -256,7 +256,6 @@ class PytorchCandidateEvaluator(CandidateEvaluator):
     def get_applicable_candidates(
         self, candidates: List[InstallationCandidate]
     ) -> List[InstallationCandidate]:
-        print()
         return [
             candidate
             for candidate in super().get_applicable_candidates(candidates)

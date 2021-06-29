@@ -60,6 +60,22 @@ class TestCUDABackend:
         assert backend == f"cu{major}{minor}"
 
 
+class TestOrdering:
+    def test_cpu(self):
+        assert cb.CPUBackend() < cb.CUDABackend(0, 0)
+        assert cb.CPUBackend() < cb.AnyBackend()
+
+    def test_any(self):
+        assert cb.AnyBackend() > cb.CUDABackend(99, 99)
+        assert cb.AnyBackend() > cb.CPUBackend()
+
+    def test_cuda(self):
+        assert cb.CUDABackend(0, 0) > cb.CPUBackend()
+        assert cb.CUDABackend(99, 99) < cb.AnyBackend()
+        assert cb.CUDABackend(1, 2) < cb.CUDABackend(2, 1)
+        assert cb.CUDABackend(2, 1) < cb.CUDABackend(10, 0)
+
+
 try:
     subprocess.check_call(
         "nvidia-smi", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
