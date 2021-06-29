@@ -1,5 +1,17 @@
 import re
-from typing import Any, Iterable, List, NoReturn, Optional, Text, Tuple, Union, cast
+from typing import (
+    Any,
+    Collection,
+    Iterable,
+    List,
+    NoReturn,
+    Optional,
+    Set,
+    Text,
+    Tuple,
+    Union,
+    cast,
+)
 
 from pip._internal.index.collector import LinkCollector
 from pip._internal.index.package_finder import (
@@ -13,8 +25,10 @@ from pip._internal.models.link import Link
 from pip._internal.models.search_scope import SearchScope
 from pip._internal.req.req_install import InstallRequirement
 from pip._internal.req.req_set import RequirementSet
+from pip._vendor.packaging.version import Version
 
-from ..computation_backend import ComputationBackend, detect_computation_backend
+import light_the_torch.computation_backend as cb
+
 from .common import (
     InternalLTTError,
     PatchedInstallCommand,
@@ -29,7 +43,9 @@ __all__ = ["find_links"]
 
 def find_links(
     pip_install_args: List[str],
-    computation_backend: Optional[Union[str, ComputationBackend]] = None,
+    computation_backends: Optional[
+        Union[cb.ComputationBackend, Collection[cb.ComputationBackend]]
+    ] = None,
     channel: str = "stable",
     platform: Optional[str] = None,
     python_version: Optional[str] = None,
@@ -41,9 +57,9 @@ def find_links(
     Args:
         pip_install_args: Arguments passed to ``pip install`` that will be searched for
             required PyTorch distributions
-        computation_backend: Computation backend, for example ``"cpu"`` or ``"cu102"``.
-            Defaults to the available hardware of the running system preferring CUDA
-            over CPU.
+        computation_backends: Collection of supported computation backends, for example
+            ``"cpu"`` or ``"cu102"``. Defaults to the available hardware of the running
+            system.
         channel: Channel of the PyTorch wheels. Can be one of ``"stable"`` (default),
             ``"test"``, and ``"nightly"``.
         platform: Platform, for example ``"linux_x86_64"`` or ``"win_amd64"``. Defaults
@@ -55,10 +71,12 @@ def find_links(
     Returns:
         Wheel links with given properties for all required PyTorch distributions.
     """
-    if computation_backend is None:
-        computation_backend = detect_computation_backend()
-    elif isinstance(computation_backend, str):
-        computation_backend = ComputationBackend.from_str(computation_backend)
+    if computation_backends is None:
+        computation_backends = cb.detect_compatible_computation_backends()
+    elif isinstance(computation_backends, cb.ComputationBackend):
+        computation_backends = {computation_backends}
+    else:
+        computation_backends = set(computation_backends)
 
     if channel not in ("stable", "test", "nightly"):
         raise ValueError(
@@ -69,7 +87,7 @@ def find_links(
     dists = extract_dists(pip_install_args)
 
     cmd = StopAfterPytorchLinksFoundCommand(
-        computation_backend=computation_backend, channel=channel
+        computation_backends=computation_backends, channel=channel
     )
     pip_install_args = adjust_pip_install_args(dists, platform, python_version)
     options, args = cmd.parser.parse_args(pip_install_args)
@@ -172,37 +190,43 @@ class PytorchLinkEvaluator(LinkEvaluator):
 
 class PytorchCandidatePreferences(CandidatePreferences):
     def __init__(
-        self, *args: Any, computation_backend: ComputationBackend, **kwargs: Any,
+        self,
+        *args: Any,
+        computation_backends: Set[cb.ComputationBackend],
+        **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.computation_backend = computation_backend
+        self.computation_backends = computation_backends
 
     @classmethod
     def from_candidate_preferences(
         cls,
         candidate_preferences: CandidatePreferences,
-        computation_backend: ComputationBackend,
+        computation_backends: Set[cb.ComputationBackend],
     ) -> "PytorchCandidatePreferences":
         return new_from_similar(
             cls,
             candidate_preferences,
             ("prefer_binary", "allow_all_prereleases",),
-            computation_backend=computation_backend,
+            computation_backends=computation_backends,
         )
 
 
 class PytorchCandidateEvaluator(CandidateEvaluator):
     def __init__(
-        self, *args: Any, computation_backend: ComputationBackend, **kwargs: Any,
+        self,
+        *args: Any,
+        computation_backends: Set[cb.ComputationBackend],
+        **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.computation_backend = computation_backend
+        self.computation_backends = {cb.AnyBackend(), *computation_backends}
 
     @classmethod
     def from_candidate_evaluator(
         cls,
         candidate_evaluator: CandidateEvaluator,
-        computation_backend: ComputationBackend,
+        computation_backends: Set[cb.ComputationBackend],
     ) -> "PytorchCandidateEvaluator":
         return new_from_similar(
             cls,
@@ -215,8 +239,19 @@ class PytorchCandidateEvaluator(CandidateEvaluator):
                 "allow_all_prereleases",
                 "hashes",
             ),
-            computation_backend=computation_backend,
+            computation_backends=computation_backends,
         )
+
+    def _sort_key(
+        self, candidate: InstallationCandidate
+    ) -> Tuple[cb.ComputationBackend, Version]:
+        version = Version(
+            f"{candidate.version.major}"
+            f".{candidate.version.minor}"
+            f".{candidate.version.micro}"
+        )
+        computation_backend = cb.ComputationBackend.from_str(candidate.version.local)
+        return computation_backend, version
 
     def get_applicable_candidates(
         self, candidates: List[InstallationCandidate]
@@ -224,8 +259,7 @@ class PytorchCandidateEvaluator(CandidateEvaluator):
         return [
             candidate
             for candidate in super().get_applicable_candidates(candidates)
-            if candidate.version.local == "any"
-            or candidate.version.local == self.computation_backend
+            if candidate.version.local in self.computation_backends
         ]
 
 
@@ -233,33 +267,34 @@ class PytorchLinkCollector(LinkCollector):
     def __init__(
         self,
         *args: Any,
-        computation_backend: ComputationBackend,
+        computation_backends: Set[cb.ComputationBackend],
         channel: str = "stable",
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         if channel == "stable":
-            url = "https://download.pytorch.org/whl/torch_stable.html"
+            urls = ["https://download.pytorch.org/whl/torch_stable.html"]
         else:
-            url = (
+            urls = [
                 f"https://download.pytorch.org/whl/"
-                f"{channel}/{computation_backend}/torch_{channel}.html"
-            )
-        self.search_scope = SearchScope.create(find_links=[url], index_urls=[])
+                f"{channel}/{backend}/torch_{channel}.html"
+                for backend in sorted(computation_backends, key=str)
+            ]
+        self.search_scope = SearchScope.create(find_links=urls, index_urls=[])
 
     @classmethod
     def from_link_collector(
         cls,
         link_collector: LinkCollector,
-        computation_backend: ComputationBackend,
+        computation_backends: Set[cb.ComputationBackend],
         channel: str = "stable",
     ) -> "PytorchLinkCollector":
         return new_from_similar(
             cls,
             link_collector,
-            ("session", "search_scope",),
+            ("session", "search_scope"),
             channel=channel,
-            computation_backend=computation_backend,
+            computation_backends=computation_backends,
         )
 
 
@@ -270,18 +305,18 @@ class PytorchPackageFinder(PackageFinder):
     def __init__(
         self,
         *args: Any,
-        computation_backend: ComputationBackend,
+        computation_backends: Set[cb.ComputationBackend],
         channel: str = "stable",
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self._candidate_prefs = PytorchCandidatePreferences.from_candidate_preferences(
-            self._candidate_prefs, computation_backend=computation_backend
+            self._candidate_prefs, computation_backends=computation_backends
         )
         self._link_collector = PytorchLinkCollector.from_link_collector(
             self._link_collector,
             channel=channel,
-            computation_backend=computation_backend,
+            computation_backends=computation_backends,
         )
 
     def make_candidate_evaluator(
@@ -290,7 +325,7 @@ class PytorchPackageFinder(PackageFinder):
         candidate_evaluator = super().make_candidate_evaluator(*args, **kwargs)
         return PytorchCandidateEvaluator.from_candidate_evaluator(
             candidate_evaluator,
-            computation_backend=self._candidate_prefs.computation_backend,
+            computation_backends=self._candidate_prefs.computation_backends,
         )
 
     def make_link_evaluator(self, *args: Any, **kwargs: Any) -> PytorchLinkEvaluator:
@@ -301,7 +336,7 @@ class PytorchPackageFinder(PackageFinder):
     def from_package_finder(
         cls,
         package_finder: PackageFinder,
-        computation_backend: ComputationBackend,
+        computation_backends: Set[cb.ComputationBackend],
         channel: str = "stable",
     ) -> "PytorchPackageFinder":
         return new_from_similar(
@@ -315,7 +350,7 @@ class PytorchPackageFinder(PackageFinder):
                 "candidate_prefs",
                 "ignore_requires_python",
             ),
-            computation_backend=computation_backend,
+            computation_backends=computation_backends,
             channel=channel,
         )
 
@@ -338,19 +373,19 @@ class StopAfterPytorchLinksFoundResolver(PatchedResolverBase):
 class StopAfterPytorchLinksFoundCommand(PatchedInstallCommand):
     def __init__(
         self,
-        computation_backend: ComputationBackend,
+        computation_backends: Set[cb.ComputationBackend],
         channel: str = "stable",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        self.computation_backend = computation_backend
+        self.computation_backends = computation_backends
         self.channel = channel
 
     def _build_package_finder(self, *args: Any, **kwargs: Any) -> PytorchPackageFinder:
         package_finder = super()._build_package_finder(*args, **kwargs)
         return PytorchPackageFinder.from_package_finder(
             package_finder,
-            computation_backend=self.computation_backend,
+            computation_backends=self.computation_backends,
             channel=self.channel,
         )
 

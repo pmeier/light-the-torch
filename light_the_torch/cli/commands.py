@@ -54,7 +54,8 @@ class ExtractCommand(Command):
 
 class FindCommand(Command):
     def __init__(self, args: argparse.Namespace) -> None:
-        self.computation_backend = args.computation_backend
+        # TODO split by comma
+        self.computation_backends = args.computation_backend
         self.channel = args.channel
         self.platform = args.platform
         self.python_version = args.python_version
@@ -63,7 +64,7 @@ class FindCommand(Command):
     def _run(self, pip_install_args: List[str]) -> None:
         links = ltt.find_links(
             pip_install_args,
-            computation_backend=self.computation_backend,
+            computation_backends=self.computation_backends,
             channel=self.channel,
             platform=self.platform,
             python_version=self.python_version,
@@ -88,7 +89,7 @@ class InstallCommand(Command):
     def _run(self, pip_install_args: List[str]) -> None:
         links = ltt.find_links(
             pip_install_args,
-            computation_backend=CPUBackend() if self.force_cpu else None,
+            computation_backends={CPUBackend()} if self.force_cpu else None,
             channel=self.channel,
             verbose=self.verbose,
         )

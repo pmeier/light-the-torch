@@ -1,14 +1,17 @@
-import os
+import platform
 import re
 import subprocess
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional
+from typing import Any, Optional, Set
+
+from pip._vendor.packaging.version import InvalidVersion, Version
 
 __all__ = [
     "ComputationBackend",
+    "AnyBackend",
     "CPUBackend",
     "CUDABackend",
-    "detect_computation_backend",
+    "detect_compatible_computation_backends",
 ]
 
 
@@ -21,7 +24,11 @@ class ComputationBackend(ABC):
     @property
     @abstractmethod
     def local_specifier(self) -> str:
-        ...
+        pass
+
+    @abstractmethod
+    def __lt__(self, other: Any) -> bool:
+        pass
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, ComputationBackend):
@@ -41,7 +48,9 @@ class ComputationBackend(ABC):
     def from_str(cls, string: str) -> "ComputationBackend":
         parse_error = ParseError(string)
         string = string.lower()
-        if string == "cpu":
+        if string == "any":
+            return AnyBackend()
+        elif string == "cpu":
             return CPUBackend()
         elif string.startswith("cu"):
             match = re.match(r"^cu(da)?(?P<version>[\d.]+)$", string)
@@ -60,10 +69,28 @@ class ComputationBackend(ABC):
             raise parse_error
 
 
+class AnyBackend(ComputationBackend):
+    @property
+    def local_specifier(self) -> str:
+        return "any"
+
+    def __lt__(self, other: Any) -> bool:
+        if not isinstance(other, ComputationBackend):
+            return NotImplemented
+
+        return False
+
+
 class CPUBackend(ComputationBackend):
     @property
     def local_specifier(self) -> str:
         return "cpu"
+
+    def __lt__(self, other: Any) -> bool:
+        if not isinstance(other, ComputationBackend):
+            return NotImplemented
+
+        return True
 
 
 class CUDABackend(ComputationBackend):
@@ -75,65 +102,74 @@ class CUDABackend(ComputationBackend):
     def local_specifier(self) -> str:
         return f"cu{self.major}{self.minor}"
 
+    def __lt__(self, other: Any) -> bool:
+        if isinstance(other, AnyBackend):
+            return True
+        elif isinstance(other, CPUBackend):
+            return False
+        elif not isinstance(other, CUDABackend):
+            return NotImplemented
 
-def detect_nvidia_driver() -> Optional[str]:
-    driver: Optional[str]
+        return (self.major, self.minor) < (other.major, other.minor)
+
+
+def _detect_nvidia_driver_version() -> Optional[Version]:
+    cmd = "nvidia-smi --query-gpu=driver_version --format=csv"
     try:
-        output = subprocess.check_output(
-            "nvidia-smi --query-gpu=driver_version --format=csv",
-            shell=True,
-            stderr=subprocess.DEVNULL,
+        output = (
+            subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL)
+            .decode("utf-8")
+            .strip()
         )
-        driver = output.decode("utf-8").splitlines()[-1]
-        pattern = re.compile(r"(\d+\.\d+)")  # match at least major and minor
-        if not pattern.match(driver):
-            driver = None
-    except subprocess.CalledProcessError:
-        driver = None
-    return driver
-
-
-def get_supported_cuda_version() -> Optional[str]:
-    def split(version_string: str) -> List[int]:
-        return [int(n) for n in version_string.split(".")]
-
-    nvidia_driver = detect_nvidia_driver()
-    if nvidia_driver is None:
+        return Version(output.splitlines()[-1])
+    except (subprocess.CalledProcessError, InvalidVersion):
         return None
 
-    nvidia_driver = split(nvidia_driver)
-    cuda_version = None
-    if os.name == "nt":  # windows
-        # Table 3 from https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html
-        if nvidia_driver >= split("456.38"):
-            cuda_version = "11.1"
-        elif nvidia_driver >= split("451.22"):
-            cuda_version = "11.0"
-        elif nvidia_driver >= split("441.22"):
-            cuda_version = "10.2"
-        elif nvidia_driver >= split("418.96"):
-            cuda_version = "10.1"
-        elif nvidia_driver >= split("398.26"):
-            cuda_version = "9.2"
-    else:  # linux
-        # Table 1 from https://docs.nvidia.com/deploy/cuda-compatibility/index.html
-        if nvidia_driver >= split("450.80.02"):
-            cuda_version = "11.1"
-        elif nvidia_driver >= split("450.36.06"):
-            cuda_version = "11.0"
-        elif nvidia_driver >= split("440.33"):
-            cuda_version = "10.2"
-        elif nvidia_driver >= split("418.39"):
-            cuda_version = "10.1"
-        elif nvidia_driver >= split("396.26"):
-            cuda_version = "9.2"
-    return cuda_version
+
+# Table 3 from https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html
+_MINIMUM_DRIVER_VERSIONS = {
+    "Linux": {
+        Version("11.1"): Version("455.32"),
+        Version("11.0"): Version("450.51.06"),
+        Version("10.2"): Version("440.33"),
+        Version("10.1"): Version("418.39"),
+        Version("10.0"): Version("410.48"),
+        Version("9.2"): Version("396.26"),
+        Version("9.1"): Version("390.46"),
+        Version("9.0"): Version("384.81"),
+        Version("8.0"): Version("375.26"),
+        Version("7.5"): Version("352.31"),
+    },
+    "Windows": {
+        Version("11.1"): Version("456.81"),
+        Version("11.0"): Version("451.82"),
+        Version("10.2"): Version("441.22"),
+        Version("10.1"): Version("418.96"),
+        Version("10.0"): Version("411.31"),
+        Version("9.2"): Version("398.26"),
+        Version("9.1"): Version("391.29"),
+        Version("9.0"): Version("385.54"),
+        Version("8.0"): Version("376.51"),
+        Version("7.5"): Version("353.66"),
+    },
+}
 
 
-def detect_computation_backend() -> ComputationBackend:
-    cuda_version = get_supported_cuda_version()
-    if cuda_version is None:
-        return CPUBackend()
-    else:
-        major, minor = cuda_version.split(".")
-        return CUDABackend(int(major), int(minor))
+def _detect_compatible_cuda_backends() -> Set[CUDABackend]:
+    driver_version = _detect_nvidia_driver_version()
+    if not driver_version:
+        return set()
+
+    minimum_driver_versions = _MINIMUM_DRIVER_VERSIONS.get(platform.system())
+    if not minimum_driver_versions:
+        return set()
+
+    return {
+        CUDABackend(cuda_version.major, cuda_version.minor)
+        for cuda_version, minimum_driver_version in minimum_driver_versions.items()
+        if driver_version >= minimum_driver_version
+    }
+
+
+def detect_compatible_computation_backends() -> Set[ComputationBackend]:
+    return {CPUBackend(), *_detect_compatible_cuda_backends()}

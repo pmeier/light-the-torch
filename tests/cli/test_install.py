@@ -74,8 +74,8 @@ def test_ltt_install_force_cpu(
         cli.main()
 
     _, kwargs = find_links.call_args
-    assert "computation_backend" in kwargs
-    assert kwargs["computation_backend"] == CPUBackend()
+    assert "computation_backends" in kwargs
+    assert set(kwargs["computation_backends"]) == {CPUBackend()}
 
 
 def test_ltt_install_pytorch_only(
