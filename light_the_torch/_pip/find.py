@@ -57,9 +57,9 @@ def find_links(
     Args:
         pip_install_args: Arguments passed to ``pip install`` that will be searched for
             required PyTorch distributions
-        computation_backend: Computation backend, for example ``"cpu"`` or ``"cu102"``.
-            Defaults to the available hardware of the running system preferring CUDA
-            over CPU.
+        computation_backends: Collection of supported computation backends, for example
+            ``"cpu"`` or ``"cu102"``. Defaults to the available hardware of the running
+            system.
         channel: Channel of the PyTorch wheels. Can be one of ``"stable"`` (default),
             ``"test"``, and ``"nightly"``.
         platform: Platform, for example ``"linux_x86_64"`` or ``"win_amd64"``. Defaults
