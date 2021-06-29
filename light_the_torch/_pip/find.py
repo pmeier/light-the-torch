@@ -244,14 +244,14 @@ class PytorchCandidateEvaluator(CandidateEvaluator):
 
     def _sort_key(
         self, candidate: InstallationCandidate
-    ) -> Tuple[Version, cb.ComputationBackend]:
+    ) -> Tuple[cb.ComputationBackend, Version]:
         version = Version(
             f"{candidate.version.major}"
             f".{candidate.version.minor}"
             f".{candidate.version.micro}"
         )
         computation_backend = cb.ComputationBackend.from_str(candidate.version.local)
-        return version, computation_backend
+        return computation_backend, version
 
     def get_applicable_candidates(
         self, candidates: List[InstallationCandidate]
