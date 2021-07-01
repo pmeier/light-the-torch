@@ -213,6 +213,8 @@ class PytorchCandidatePreferences(CandidatePreferences):
 
 
 class PytorchCandidateEvaluator(CandidateEvaluator):
+    _MACOS_PLATFORM_PATTERN = re.compile(r"macosx_\d+_\d+_x86_64")
+
     def __init__(
         self,
         *args: Any,
@@ -245,22 +247,38 @@ class PytorchCandidateEvaluator(CandidateEvaluator):
     def _sort_key(
         self, candidate: InstallationCandidate
     ) -> Tuple[cb.ComputationBackend, Version]:
-        version = Version(
-            f"{candidate.version.major}"
-            f".{candidate.version.minor}"
-            f".{candidate.version.micro}"
+        return (
+            cb.ComputationBackend.from_str(candidate.version.local),
+            candidate.version.base_version,
         )
-        computation_backend = cb.ComputationBackend.from_str(candidate.version.local)
-        return computation_backend, version
 
     def get_applicable_candidates(
         self, candidates: List[InstallationCandidate]
     ) -> List[InstallationCandidate]:
-        return [
+        applicable_candidates = [
             candidate
             for candidate in super().get_applicable_candidates(candidates)
             if candidate.version.local in self.computation_backends
         ]
+        if self._is_macos:
+            self._patch_mac_lt_1_0_0_local(applicable_candidates)
+        return applicable_candidates
+
+    @property
+    def _is_macos(self) -> bool:
+        return any(
+            self._MACOS_PLATFORM_PATTERN.match(tag.platform)
+            for tag in self._supported_tags
+        )
+
+    def _patch_mac_lt_1_0_0_local(
+        self, candidates: List[InstallationCandidate]
+    ) -> None:
+        for candidate in candidates:
+            if candidate.version.major >= 1:
+                continue
+
+            candidate.version = Version(str(candidate.version).replace("any", "cpu"))
 
 
 class PytorchLinkCollector(LinkCollector):

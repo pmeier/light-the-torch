@@ -1,6 +1,7 @@
 import itertools
 
 import pytest
+from pip._internal.models.wheel import Wheel
 from pip._vendor.packaging.version import Version
 
 import light_the_torch as ltt
@@ -178,3 +179,19 @@ def test_find_links_channel_smoke(channel):
     assert ltt.find_links(
         ["torch"], computation_backends={cb.CPUBackend()}, channel=channel
     )
+
+
+@pytest.mark.parametrize("python_version", PYTHON_VERSIONS)
+def test_patch_mac_local_specifier_lt_1_0_0(
+    patch_extract_dists, patch_run, python_version
+):
+    # See https://github.com/pmeier/light-the-torch/issues/34
+    dists = ["torch"]
+    patch_extract_dists(return_value=dists)
+
+    links = ltt.find_links(
+        dists, python_version=python_version, platform="macosx_10_9_x86_64"
+    )
+    version = Version(Wheel(links[0]).version)
+
+    assert version >= Version("1.0.0")
