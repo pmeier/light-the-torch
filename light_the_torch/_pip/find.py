@@ -222,7 +222,7 @@ class PytorchCandidateEvaluator(CandidateEvaluator):
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.computation_backends = {cb.AnyBackend(), *computation_backends}
+        self.computation_backends = computation_backends
 
     @classmethod
     def from_candidate_evaluator(
@@ -248,37 +248,21 @@ class PytorchCandidateEvaluator(CandidateEvaluator):
         self, candidate: InstallationCandidate
     ) -> Tuple[cb.ComputationBackend, Version]:
         return (
-            cb.ComputationBackend.from_str(candidate.version.local),
+            cb.ComputationBackend.from_str(
+                candidate.version.local.replace("any", "cpu")
+            ),
             candidate.version.base_version,
         )
 
     def get_applicable_candidates(
         self, candidates: List[InstallationCandidate]
     ) -> List[InstallationCandidate]:
-        applicable_candidates = [
+        return [
             candidate
             for candidate in super().get_applicable_candidates(candidates)
             if candidate.version.local in self.computation_backends
+            or candidate.version.local == "any"
         ]
-        if self._is_macos:
-            self._patch_mac_lt_1_0_0_local(applicable_candidates)
-        return applicable_candidates
-
-    @property
-    def _is_macos(self) -> bool:
-        return any(
-            self._MACOS_PLATFORM_PATTERN.match(tag.platform)
-            for tag in self._supported_tags
-        )
-
-    def _patch_mac_lt_1_0_0_local(
-        self, candidates: List[InstallationCandidate]
-    ) -> None:
-        for candidate in candidates:
-            if candidate.version.major >= 1:
-                continue
-
-            candidate.version = Version(str(candidate.version).replace("any", "cpu"))
 
 
 class PytorchLinkCollector(LinkCollector):

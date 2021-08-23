@@ -182,9 +182,7 @@ def test_find_links_channel_smoke(channel):
 
 
 @pytest.mark.parametrize("python_version", PYTHON_VERSIONS)
-def test_patch_mac_local_specifier_lt_1_0_0(
-    patch_extract_dists, patch_run, python_version
-):
+def test_mac_torch_ge_1_0_0(patch_extract_dists, patch_run, python_version):
     # See https://github.com/pmeier/light-the-torch/issues/34
     dists = ["torch"]
     patch_extract_dists(return_value=dists)
