@@ -251,7 +251,7 @@ class PytorchCandidateEvaluator(CandidateEvaluator):
             cb.ComputationBackend.from_str(
                 candidate.version.local.replace("any", "cpu")
             ),
-            candidate.version.base_version,
+            candidate.version,
         )
 
     def get_applicable_candidates(
