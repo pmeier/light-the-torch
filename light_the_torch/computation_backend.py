@@ -8,7 +8,6 @@ from pip._vendor.packaging.version import InvalidVersion, Version
 
 __all__ = [
     "ComputationBackend",
-    "AnyBackend",
     "CPUBackend",
     "CUDABackend",
     "detect_compatible_computation_backends",
@@ -48,9 +47,7 @@ class ComputationBackend(ABC):
     def from_str(cls, string: str) -> "ComputationBackend":
         parse_error = ParseError(string)
         string = string.lower()
-        if string == "any":
-            return AnyBackend()
-        elif string == "cpu":
+        if string == "cpu":
             return CPUBackend()
         elif string.startswith("cu"):
             match = re.match(r"^cu(da)?(?P<version>[\d.]+)$", string)
@@ -67,18 +64,6 @@ class ComputationBackend(ABC):
             return CUDABackend(int(major), int(minor))
         else:
             raise parse_error
-
-
-class AnyBackend(ComputationBackend):
-    @property
-    def local_specifier(self) -> str:
-        return "any"
-
-    def __lt__(self, other: Any) -> bool:
-        if not isinstance(other, ComputationBackend):
-            return NotImplemented
-
-        return False
 
 
 class CPUBackend(ComputationBackend):
@@ -103,9 +88,7 @@ class CUDABackend(ComputationBackend):
         return f"cu{self.major}{self.minor}"
 
     def __lt__(self, other: Any) -> bool:
-        if isinstance(other, AnyBackend):
-            return True
-        elif isinstance(other, CPUBackend):
+        if isinstance(other, CPUBackend):
             return False
         elif not isinstance(other, CUDABackend):
             return NotImplemented
