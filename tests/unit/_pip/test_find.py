@@ -30,7 +30,7 @@ def patch_run(mocker):
     return patch_run_
 
 
-CHANNELS = ("stable", "test", "nightly")
+CHANNELS = ("stable", "lts", "test", "nightly")
 PLATFORMS = ("linux_x86_64", "macosx_10_9_x86_64", "win_amd64")
 PLATFORM_MAP = dict(zip(PLATFORMS, ("Linux", "Darwin", "Windows")))
 
