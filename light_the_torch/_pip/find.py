@@ -61,7 +61,7 @@ def find_links(
             ``"cpu"`` or ``"cu102"``. Defaults to the available hardware of the running
             system.
         channel: Channel of the PyTorch wheels. Can be one of ``"stable"`` (default),
-            ``"test"``, and ``"nightly"``.
+            ``"lts"``, ``"test"``, and ``"nightly"``.
         platform: Platform, for example ``"linux_x86_64"`` or ``"win_amd64"``. Defaults
             to the platform of the running system.
         python_version: Python version, for example ``"3"`` or ``"3.7"``. Defaults to
@@ -78,9 +78,9 @@ def find_links(
     else:
         computation_backends = set(computation_backends)
 
-    if channel not in ("stable", "test", "nightly"):
+    if channel not in ("stable", "lts", "test", "nightly"):
         raise ValueError(
-            f"channel can be one of 'stable', 'test', or 'nightly', "
+            f"channel can be one of 'stable', 'lts', 'test', or 'nightly', "
             f"but got {channel} instead."
         )
 
@@ -276,6 +276,8 @@ class PytorchLinkCollector(LinkCollector):
         super().__init__(*args, **kwargs)
         if channel == "stable":
             urls = ["https://download.pytorch.org/whl/torch_stable.html"]
+        elif channel == "lts":
+            urls = ["https://download.pytorch.org/whl/lts/1.8/torch_lts.html"]
         else:
             urls = [
                 f"https://download.pytorch.org/whl/"

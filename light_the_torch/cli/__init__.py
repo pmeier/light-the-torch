@@ -117,7 +117,7 @@ def add_ltt_install_parser(subparsers: SubParsers) -> None:
         default="stable",
         help=(
             "Channel of the PyTorch wheels. "
-            "Can be one of 'stable' (default), 'test', or 'nightly'"
+            "Can be one of 'stable' (default), 'lts', 'test', or 'nightly'"
         ),
     )
     parser.add_argument(
