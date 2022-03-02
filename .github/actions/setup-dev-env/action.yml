@@ -30,7 +30,7 @@ runs:
 
     - name: Foo
       shell: bash
-      run: echo ${{ get-cache-path.path }}
+      run: echo ${{ steps.get-cache-path.outputs.path }}
 
     - name: Upgrade pip
       shell: bash
