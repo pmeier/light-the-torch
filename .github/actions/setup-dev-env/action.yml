@@ -21,11 +21,11 @@ runs:
         OS: ${{ runner.os }}
       run: >
         echo "::set-output name=path::$(
-          python -c "
+          python -c '
             import os;
             print(os.environ["OS"])
             print(${{ runner.os }})
-          "
+          '
         )
 
     - name: Foo
