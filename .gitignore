@@ -1,5 +1,7 @@
 light_the_torch/_version.py
 
+.doit.db.*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
