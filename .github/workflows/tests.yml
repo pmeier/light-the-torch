@@ -7,16 +7,16 @@ on:
       - releases/*
 
   pull_request:
-    paths:
-      - ".github/workflows/tests.yml"
-      - "light_the_torch/**"
-      - "tests/**"
-      - ".coveragerc"
-      - "codecov.yml"
-      - "dodo.py"
-      - "pytest.ini"
-      - "requirements-dev.txt"
-      - "setup.cfg"
+#    paths:
+#      - ".github/workflows/tests.yml"
+#      - "light_the_torch/**"
+#      - "tests/**"
+#      - ".coveragerc"
+#      - "codecov.yml"
+#      - "dodo.py"
+#      - "pytest.ini"
+#      - "requirements-dev.txt"
+#      - "setup.cfg"
 
   schedule:
     - cron: "0 4 * * *"

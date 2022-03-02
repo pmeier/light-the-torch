@@ -7,11 +7,30 @@ inputs:
 
 runs:
   using: composite
+
   steps:
     - name: Set up python
       uses: actions/setup-python@v2
       with:
         python-version: ${{ inputs.python-version }}
+
+    - name: Get pip cache path
+      id: get-cache-path
+      shell: bash
+      env:
+        OS: ${{ runner.os }}
+      run: >
+        echo "::set-output name=path::$(
+          python -c "
+            import os;
+            print(os.environ["OS"])
+            print(${{ runner.os }})
+          "
+        )
+
+    - name: Foo
+      shell: bash
+      run: echo ${{ get-cache-path.path }}
 
     - name: Upgrade pip
       shell: bash
