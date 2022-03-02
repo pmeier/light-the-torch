@@ -21,10 +21,7 @@ runs:
         OS: ${{ runner.os }}
       run: >
         echo "::set-output name=path::$(
-          python -c '
-            import os;
-            print(${{ runner.os }})
-          '
+          python .github/actions/setup-dev-env/get_cache_path.py
         )"
 
     - name: Foo
