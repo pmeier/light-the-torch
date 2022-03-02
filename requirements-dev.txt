@@ -1,2 +1,11 @@
-tox >= 3.2
+pytest
+pytest-subtests
+pytest-mock
+pytest-cov
 pre-commit
+flake8 >= 3.8
+mypy
+check-wheel-contents
+build
+twine
+doit
