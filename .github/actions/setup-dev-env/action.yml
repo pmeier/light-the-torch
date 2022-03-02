@@ -24,16 +24,12 @@ runs:
           python .github/actions/setup-dev-env/get_cache_path.py
         )"
 
-    - name: Foo
-      shell: bash
-      run: echo ${{ steps.get-cache-path.outputs.path }}
-
     - name: Restore pip cache
       uses: actions/cache@v2
       with:
         path: ${{ steps.get-cache-path.outputs.path }}
         key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt') }}
-        restore_keys: |
+        restore-keys: |
           ${{ runner.os }}-pip-
 
     - name: Upgrade pip
