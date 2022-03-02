@@ -46,7 +46,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: ./.github/actions/setup-dev-env
+      - name: Setup development environment
+        uses: ./.github/actions/action.yml
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -77,7 +78,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: ./.github/actions/setup-dev-env
+      - name: Setup development environment
+        uses: ./.github/actions/action.yml
 
       - name: Run CLI tests
         run: doit test --coverage tests/cli --skip-large-download

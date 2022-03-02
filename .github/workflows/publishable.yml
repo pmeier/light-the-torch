@@ -30,7 +30,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: ./.github/actions/setup-dev-env
+      - name: Setup development environment
+        uses: ./.github/actions/action.yml
 
       - name: Check if publishable
         run: doit publishable

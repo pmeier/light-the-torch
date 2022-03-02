@@ -18,7 +18,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: ./.github/actions/
+      - name: Setup development environment
+        uses: ./.github/actions/action.yml
 
       - name: Run lint
         run: doit lint
