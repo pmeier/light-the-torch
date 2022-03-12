@@ -10,7 +10,6 @@ exclude =
     .eggs,
     .mypy_cache,
     .pytest_cache,
-    .tox,
     __pycache__,
     *.pyc,
 ignore = E203, E501, W503
