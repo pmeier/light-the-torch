@@ -72,3 +72,9 @@ def task_publishable():
             ["check-wheel-contents", HERE / "dist"],
         ],
     )
+
+
+def task_publish():
+    task = task_publishable()
+    task["actions"].append(["twine", "upload", *list((HERE / "dist").glob("*"))])
+    return task

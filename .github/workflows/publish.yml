@@ -2,38 +2,27 @@ name: publish
 
 on:
   release:
-    types: [created]
+    types:
+      - published
 
 jobs:
   pypi:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up python
-        uses: actions/setup-python@v2
-        with:
-          python-version: "3.6"
-
-      - name: Upgrade pip
-        run: python -m pip install --upgrade pip
-
-      - name: Upgrade or install additional system packages
-        run: pip install --upgrade setuptools virtualenv wheel
-
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
-      - name: Install pep517 and twine
-        run: pip install pep517 twine
+      - name: Setup development environment
+        uses: ./.github/actions/setup-dev-env
+        with:
+          python-version: "3.7"
 
-      - name: Build source and binary
-        run: python -m pep517.build --source --binary .
-
-      - name: Upload to PyPI
+      - name: Run unit tests
         env:
           TWINE_REPOSITORY: pypi
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: twine upload dist/*
+        run: doit publish
