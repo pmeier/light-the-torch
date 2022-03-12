@@ -1,6 +1,9 @@
+import functools
 import pathlib
 
-from doit.action import CmdAction
+from doit.action import CmdAction as _CmdAction
+
+CmdAction = functools.partial(_CmdAction, shell=False)
 
 HERE = pathlib.Path(__file__).parent
 
@@ -50,7 +53,7 @@ def task_test():
         return cmd
 
     return dict(
-        actions=[CmdAction(run, shell=False)],
+        actions=[CmdAction(run)],
         verbosity=2,
         params=[dict(name="coverage", long="coverage", type=bool, default=False,)],
         pos_arg="passthrough",
@@ -68,7 +71,10 @@ def task_publishable():
                 HERE / "light_the_torch.egg-info",
             ],
             ["python", "-m", "build", "--sdist", "--wheel", HERE],
-            ["twine", "check", *list((HERE / "dist").glob("*"))],
+            # We need the lambda here to lazily glob the files in dist/*, since they
+            # are only created by the previous step rather than when this task is
+            # created.
+            CmdAction(lambda: ["twine", "check", *list((HERE / "dist").glob("*"))]),
             ["check-wheel-contents", HERE / "dist"],
         ],
     )
@@ -76,5 +82,9 @@ def task_publishable():
 
 def task_publish():
     task = task_publishable()
-    task["actions"].append(["twine", "upload", *list((HERE / "dist").glob("*"))])
+    # We need the lambda here to lazily glob the files in dist/*, since they are only
+    # created by the previous step rather than when this task is created.
+    task["actions"].append(
+        lambda: CmdAction(["twine", "upload", *list((HERE / "dist").glob("*"))])
+    )
     return task

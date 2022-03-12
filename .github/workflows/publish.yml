@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: "3.7"
 
-      - name: Run unit tests
+      - name: Publish to PyPI
         env:
           TWINE_REPOSITORY: pypi
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
