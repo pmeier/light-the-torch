@@ -7,13 +7,13 @@ import unittest.mock
 from typing import (
     Any,
     Callable,
+    cast,
     Collection,
     Dict,
     Iterator,
     List,
     Optional,
     Tuple,
-    cast,
 )
 from unittest import mock
 from urllib.parse import urljoin
@@ -28,11 +28,11 @@ from pip._internal.models.link import Link
 from pip._internal.models.search_scope import SearchScope
 
 from ._utils import (  # extract_ltt_options,
-    Channel,
-    LttOptions,
     apply_fn_patch,
+    Channel,
     channel_option,
     computation_backend_options,
+    LttOptions,
 )
 from .computation_backend import ComputationBackend
 

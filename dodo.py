@@ -26,11 +26,8 @@ def task_format():
 
 
 def task_lint():
-    yield dict(
-        name="flake8", actions=[["flake8", "--config=.flake8"]],
-    )
-    yield dict(
-        name="mypy", actions=[["mypy", "--config-file=mypy.ini"]],
+    return dict(
+        actions=[["flake8", "--config=.flake8"]],
     )
 
 
@@ -55,7 +52,14 @@ def task_test():
     return dict(
         actions=[CmdAction(run)],
         verbosity=2,
-        params=[dict(name="coverage", long="coverage", type=bool, default=False,)],
+        params=[
+            dict(
+                name="coverage",
+                long="coverage",
+                type=bool,
+                default=False,
+            )
+        ],
         pos_arg="passthrough",
     )
 

@@ -12,6 +12,7 @@ from types import SimpleNamespace
 from typing import (
     Any,
     Callable,
+    cast,
     Dict,
     Iterator,
     List,
@@ -19,7 +20,6 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
-    cast,
 )
 from unittest import mock
 
@@ -170,7 +170,11 @@ def computation_backend_options() -> List[optparse.Option]:
 
 
 def channel_option() -> optparse.Option:
-    return optparse.Option("--pytorch-channel", "--pc", help="FOO",)
+    return optparse.Option(
+        "--pytorch-channel",
+        "--pc",
+        help="FOO",
+    )
 
 
 def process_computation_backend(opts: optparse.Values) -> cb.ComputationBackend:

@@ -58,7 +58,7 @@ To run the full lint check locally run
 Tests
 -----
 
-``light-the-torch`` uses `pytest <https://docs.pytest.org/en/stable/>`_ to run the test 
+``light-the-torch`` uses `pytest <https://docs.pytest.org/en/stable/>`_ to run the test
 suite. You can run it locally with
 
 .. code-block:: sh

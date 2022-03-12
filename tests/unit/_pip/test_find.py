@@ -1,13 +1,13 @@
 import itertools
 
-import pytest
-from pip._internal.models.wheel import Wheel
-from pip._vendor.packaging.version import Version
-
 import light_the_torch as ltt
 import light_the_torch.computation_backend as cb
+
+import pytest
 from light_the_torch._pip.common import InternalLTTError
 from light_the_torch._pip.find import maybe_add_option
+from pip._internal.models.wheel import Wheel
+from pip._vendor.packaging.version import Version
 
 
 @pytest.fixture
@@ -52,7 +52,13 @@ PYTHON_VERSIONS = set(itertools.chain(*SUPPORTED_PYTHON_VERSIONS.values()))
 
 def test_maybe_add_option_already_set():
     args = ["--foo", "bar"]
-    assert maybe_add_option(args, "--foo",) == args
+    assert (
+        maybe_add_option(
+            args,
+            "--foo",
+        )
+        == args
+    )
     assert maybe_add_option(args, "-f", aliases=("--foo",)) == args
 
 
@@ -153,7 +159,9 @@ def wheel_properties():
         )
 
     return pytest.mark.parametrize(
-        ("platform", "computation_backend", "python_version"), params, ids=str,
+        ("platform", "computation_backend", "python_version"),
+        params,
+        ids=str,
     )
 
 

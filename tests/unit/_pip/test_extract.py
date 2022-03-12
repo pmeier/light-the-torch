@@ -1,6 +1,5 @@
-import pytest
-
 import light_the_torch as ltt
+import pytest
 from light_the_torch._pip import extract
 from light_the_torch._pip.common import InternalLTTError
 

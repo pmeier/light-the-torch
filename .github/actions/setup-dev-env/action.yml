@@ -2,8 +2,8 @@ name: setup-dev-env
 description: "Setup development environment"
 
 inputs:
-   python-version:
-     default: "3.7"
+  python-version:
+    default: "3.7"
 
 runs:
   using: composite

@@ -1,11 +1,13 @@
+doit
+# format & lint
+pre-commit
+flake8 ==4.01
+# test
 pytest
 pytest-subtests
 pytest-mock
 pytest-cov
-pre-commit
-flake8 >= 3.8
-mypy
-check-wheel-contents
+# publish
 build
 twine
-doit
+check-wheel-contents

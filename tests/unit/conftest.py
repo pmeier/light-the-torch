@@ -1,6 +1,5 @@
-import pytest
-
 import light_the_torch.computation_backend as cb
+import pytest
 
 
 class GenericComputationBackend(cb.ComputationBackend):

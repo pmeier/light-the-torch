@@ -96,7 +96,11 @@ class CUDABackend(ComputationBackend):
 def _detect_nvidia_driver_version() -> Optional[Version]:
     try:
         result = subprocess.run(
-            ["nvidia-smi", "--query-gpu=driver_version", "--format=csv",],
+            [
+                "nvidia-smi",
+                "--query-gpu=driver_version",
+                "--format=csv",
+            ],
             check=True,
             capture_output=True,
             text=True,

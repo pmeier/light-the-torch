@@ -72,7 +72,10 @@ class TestOrdering:
 
 try:
     subprocess.check_call(
-        "nvidia-smi", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        "nvidia-smi",
+        shell=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
     NVIDIA_DRIVER_AVAILABLE = True
 except subprocess.CalledProcessError:
@@ -129,7 +132,9 @@ def cuda_backends_params():
             pytest.param(
                 system,
                 str(driver_versions[idx]),
-                set(cuda_backends[: idx + 1],),
+                set(
+                    cuda_backends[: idx + 1],
+                ),
                 id=f"{system.lower()}-normal",
             )
         )

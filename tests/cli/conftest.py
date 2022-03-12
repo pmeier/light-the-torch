@@ -18,7 +18,8 @@ def patch_extract_dists(mocker):
         if return_value is None:
             return_value = []
         return mocker.patch(
-            "light_the_torch.cli.commands.ltt.extract_dists", return_value=return_value,
+            "light_the_torch.cli.commands.ltt.extract_dists",
+            return_value=return_value,
         )
 
     return patch_extract_dists_
@@ -30,7 +31,8 @@ def patch_find_links(mocker):
         if return_value is None:
             return_value = []
         return mocker.patch(
-            "light_the_torch.cli.commands.ltt.find_links", return_value=return_value,
+            "light_the_torch.cli.commands.ltt.find_links",
+            return_value=return_value,
         )
 
     return patch_find_links_

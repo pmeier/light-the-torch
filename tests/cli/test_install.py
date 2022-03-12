@@ -63,7 +63,10 @@ def test_ltt_install(
 
 
 def test_ltt_install_force_cpu(
-    patch_install_argv, patch_find_links, patch_subprocess_call, patch_collect_packages,
+    patch_install_argv,
+    patch_find_links,
+    patch_subprocess_call,
+    patch_collect_packages,
 ):
     patch_install_argv("--force-cpu")
     find_links = patch_find_links()
@@ -79,7 +82,10 @@ def test_ltt_install_force_cpu(
 
 
 def test_ltt_install_pytorch_only(
-    patch_install_argv, patch_find_links, patch_subprocess_call, patch_collect_packages,
+    patch_install_argv,
+    patch_find_links,
+    patch_subprocess_call,
+    patch_collect_packages,
 ):
     patch_install_argv("--pytorch-only")
     patch_find_links()
@@ -93,7 +99,10 @@ def test_ltt_install_pytorch_only(
 
 
 def test_ltt_install_channel(
-    patch_install_argv, patch_find_links, patch_subprocess_call, patch_collect_packages,
+    patch_install_argv,
+    patch_find_links,
+    patch_subprocess_call,
+    patch_collect_packages,
 ):
     channel = "channel"
 
@@ -111,7 +120,9 @@ def test_ltt_install_channel(
 
 
 def test_ltt_install_install_cmd(
-    patch_install_argv, patch_find_links, patch_subprocess_call,
+    patch_install_argv,
+    patch_find_links,
+    patch_subprocess_call,
 ):
     install_cmd = "custom install {packages}"
     packages = ["foo", "bar"]
@@ -135,7 +146,9 @@ def test_ltt_install_install_cmd_no_subs(patch_install_argv):
 
 
 def test_ltt_install_editables(
-    patch_install_argv, patch_find_links, patch_subprocess_call,
+    patch_install_argv,
+    patch_find_links,
+    patch_subprocess_call,
 ):
     install_cmd = "custom install {packages}"
     editables = [".", "foo"]
@@ -163,7 +176,9 @@ def test_ltt_install_editables(
 
 
 def test_ltt_install_requirements(
-    patch_install_argv, patch_find_links, patch_subprocess_call,
+    patch_install_argv,
+    patch_find_links,
+    patch_subprocess_call,
 ):
     install_cmd = "custom install {packages}"
     requirements = ["requirements.txt", "requirements-dev.txt"]
@@ -193,7 +208,10 @@ def test_ltt_install_requirements(
 
 
 def test_ltt_install_verbose(
-    patch_install_argv, patch_find_links, patch_subprocess_call, patch_collect_packages,
+    patch_install_argv,
+    patch_find_links,
+    patch_subprocess_call,
+    patch_collect_packages,
 ):
     patch_install_argv("--verbose")
     find_links = patch_find_links()
