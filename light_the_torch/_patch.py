@@ -177,7 +177,7 @@ def patch_cli_options():
     ):
         with unittest.mock.patch.dict(index_group):
             options = index_group["options"].copy()
-            options.append(LttOptions.channel_parser_option())
+            options.append(LttOptions.channel_parser_option)
             index_group["options"] = options
             yield
 
@@ -200,6 +200,7 @@ def patch_link_collection(computation_backends, channel):
     @contextlib.contextmanager
     def context(input):
         if input.project_name not in PYTORCH_DISTRIBUTIONS:
+            yield
             return
 
         with mock.patch.object(input.self, "search_scope", search_scope):
@@ -219,6 +220,9 @@ def patch_link_evaluation():
     )
 
     def postprocessing(input, output: Tuple[bool, Optional[str]]):
+        if input.self.project_name not in PYTORCH_DISTRIBUTIONS:
+            return output
+
         is_candidate, result = output
         if not is_candidate:
             return output
