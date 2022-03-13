@@ -103,4 +103,5 @@ def task_publish():
     task["actions"].append(
         lambda: CmdAction(["twine", "upload", *list((HERE / "dist").glob("*"))])
     )
+    task["verbosity"] = 2
     return task
