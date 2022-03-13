@@ -101,7 +101,7 @@ def task_publish():
     # We need the lambda here to lazily glob the files in dist/*, since they are only
     # created by the previous step rather than when this task is created.
     task["actions"].append(
-        lambda: CmdAction(["twine", "upload", *list((HERE / "dist").glob("*"))])
+        CmdAction(lambda: ["twine", "upload", *list((HERE / "dist").glob("*"))])
     )
     task["verbosity"] = 2
     return task
