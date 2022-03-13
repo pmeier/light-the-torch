@@ -8,16 +8,28 @@ CmdAction = functools.partial(_CmdAction, shell=False)
 HERE = pathlib.Path(__file__).parent
 
 
+def task_setup(pip="pip"):
+    return dict(
+        actions=[
+            [pip, "install", "-r", HERE / "requirements-dev.txt"],
+            [pip, "install", "-e", HERE],
+        ],
+    )
+
+
 def task_dev_env():
     dev_env = HERE / ".venv"
-    pip = dev_env / "bin" / "pip"
     return dict(
         actions=[
             ["rm", "-rf", dev_env],
             ["virtualenv", dev_env, "--prompt=(light-the-torch-dev) "],
-            [pip, "install", "-r", HERE / "requirements-dev.txt"],
-            [pip, "install", "-e", HERE],
+            *task_setup(dev_env / "bin" / "pip")["actions"],
+            [
+                "echo",
+                f"run `source {dev_env / 'bin' / 'activate'}` the virtual environment",
+            ],
         ],
+        verbosity=2,
     )
 
 
