@@ -53,40 +53,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Run unit tests
-        run: doit test --coverage tests/unit --skip-large-download
+        run: doit test --coverage
 
       - name: Upload coverage
         uses: codecov/codecov-action@v2.1.0
         with:
           flags: unit
           env_vars: OS,PYTHON_VERSION
-
-  cli:
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
-
-    runs-on: ${{ matrix.os }}
-    env:
-      OS: ${{ matrix.os }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: Setup development environment
-        uses: ./.github/actions/setup-dev-env
-
-      - name: Run CLI tests
-        run: doit test --coverage tests/cli --skip-large-download
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v2.1.0
-        with:
-          flags: cli
-          env_vars: OS
