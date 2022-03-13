@@ -18,6 +18,8 @@ from pip._internal.index.package_finder import CandidateEvaluator
 from pip._internal.models.candidate import InstallationCandidate
 from pip._internal.models.search_scope import SearchScope
 
+import light_the_torch as ltt
+
 from . import _cb as cb
 
 from ._utils import apply_fn_patch
@@ -43,10 +45,7 @@ def patch(pip_main):
         if argv is None:
             argv = sys.argv[1:]
 
-        if argv[0] != "install":
-            return pip_main(argv)
-
-        with apply_install_patches(argv):
+        with apply_patches(argv):
             return pip_main(argv)
 
     return wrapper
@@ -77,7 +76,6 @@ class LttOptions:
         return [
             optparse.Option(
                 "--pytorch-computation-backend",
-                "--pcb",
                 # TODO: describe multiple inputs
                 help=(
                     "Computation backend for compiled PyTorch distributions, "
@@ -101,7 +99,6 @@ class LttOptions:
     def channel_parser_option() -> optparse.Option:
         return optparse.Option(
             "--pytorch-channel",
-            "--pch",
             # FIXME add help text
             help="",
         )
@@ -146,10 +143,11 @@ class LttOptions:
 
 
 @contextlib.contextmanager
-def apply_install_patches(argv):
+def apply_patches(argv):
     options = LttOptions.from_pip_argv(argv)
 
     patches = [
+        patch_cli_version(),
         patch_cli_options(),
         patch_link_collection(options.computation_backends, options.channel),
         patch_link_evaluation(),
@@ -164,6 +162,19 @@ def apply_install_patches(argv):
 
 
 @contextlib.contextmanager
+def patch_cli_version():
+    with apply_fn_patch(
+        "pip",
+        "_internal",
+        "cli",
+        "main_parser",
+        "get_pip_version",
+        postprocessing=lambda input, output: f"ltt {ltt.__version__} from {ltt.__path__[0]}\n{output}",
+    ):
+        yield
+
+
+@contextlib.contextmanager
 def patch_cli_options():
     def postprocessing(input, output):
         for option in LttOptions.computation_backend_parser_options():
@@ -172,7 +183,11 @@ def patch_cli_options():
     index_group = pip._internal.cli.cmdoptions.index_group
 
     with apply_fn_patch(
-        "pip._internal.cli.cmdoptions.add_target_python_options",
+        "pip",
+        "_internal",
+        "cli",
+        "cmdoptions",
+        "add_target_python_options",
         postprocessing=postprocessing,
     ):
         with unittest.mock.patch.dict(index_group):
@@ -207,7 +222,13 @@ def patch_link_collection(computation_backends, channel):
             yield
 
     with apply_fn_patch(
-        "pip._internal.index.collector.LinkCollector.collect_sources", context=context
+        "pip",
+        "_internal",
+        "index",
+        "collector",
+        "LinkCollector",
+        "collect_sources",
+        context=context,
     ):
         yield
 
@@ -238,7 +259,12 @@ def patch_link_evaluation():
         return True, f"{result}+{local}"
 
     with apply_fn_patch(
-        "pip._internal.index.package_finder.LinkEvaluator.evaluate_link",
+        "pip",
+        "_internal",
+        "index",
+        "package_finder",
+        "LinkEvaluator",
+        "evaluate_link",
         postprocessing=postprocessing,
     ):
         yield
@@ -272,7 +298,12 @@ def patch_candidate_selection(computation_backends):
         )
 
     with apply_fn_patch(
-        "pip._internal.index.package_finder.CandidateEvaluator.get_applicable_candidates",
+        "pip",
+        "_internal",
+        "index",
+        "package_finder",
+        "CandidateEvaluator",
+        "get_applicable_candidates",
         postprocessing=postprocessing,
     ):
         with unittest.mock.patch.object(CandidateEvaluator, "_sort_key", new=sort_key):
