@@ -4,7 +4,6 @@ pre-commit
 flake8 ==4.0.1
 # test
 pytest
-pytest-subtests
 pytest-mock
 pytest-cov
 # publish
