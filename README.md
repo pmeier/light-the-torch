@@ -12,13 +12,18 @@ without user interference.
 - [Why do I need it?](#why-do-i-need-it)
 - [How do I install it?](#how-do-i-install-it)
 - [How do I use it?](#how-do-i-use-it)
-- [How does it work?](#what-is-it)
-- [What is it?](#how-does-it-work)
+- [How does it work?](#how-does-it-work)
 
 ## Why do I need it?
 
-PyTorch distributions are is fully `pip install`'able, but PyPI, the default `pip`
-search index, has some limitations:
+---
+
+TL;DR: TODO
+
+---
+
+PyTorch distributions are fully `pip install`'able, but PyPI, the default `pip` search
+index, has some limitations:
 
 1. PyPI regularly only allows binaries up to a size of
    [approximately 60 MB](https://github.com/pypa/packaging-problems/issues/86). One can
@@ -55,8 +60,19 @@ recommends?
 conda install pytorch cpuonly -c pytorch
 ```
 
-This should cover all cases, right? Well, almost. The above command is enough if you
+This should cover all cases, right? Well, no. The above command is only enough if you
 just need PyTorch.
+
+---
+
+TODO
+
+Otherwise
+
+if you are a library author
+
+pip is the most prominent package manager it is thus almost set to also publish your
+package to PyPI Now, how do you tell your users to install your lbrary?
 
 Imagine the case of a package that depends on PyTorch, but cannot be installed with
 `conda` since it is hosted on PyPI? You can't use the `-f` option since the package in
@@ -64,8 +80,12 @@ question is not hosted by PyTorch. Thus, you now have to manually track down (an
 resolve in the case of multiple packages) the PyTorch distributions, install them in a
 first step and only install the actual package (and all other dependencies) afterwards.
 
+2. The most prominent public conda channel is conda-forge.
+
 If just want to use `pip install` like you always did before without worrying about any
 of the stuff above, `light-the-torch` was made for you.
+
+---
 
 ## How do I install it?
 
@@ -106,14 +126,14 @@ In fact, `ltt` is `pip` with a few added options:
   nightly, test, and LTS binaries. You can switch the channel you want to install from
   with the `--pytorch-channel` / `--pch` option:
 
-```shell
-ltt install --pytorch-channel=nightly torch
-```
+  ```shell
+  ltt install --pytorch-channel=nightly torch
+  ```
 
-If the channel option is not passed, using `pip`'s builtin `--pre` option will install
-PyTorch test binaries.
+  If the channel option is not passed, using `pip`'s builtin `--pre` option will install
+  PyTorch test binaries.
 
-Of course you are not limited to only install PyTorch distributions. Everything detailed
+Of course you are not limited to install only PyTorch distributions. Everything detailed
 above also works if you install packages that depend on PyTorch.
 
 ## How does it work?
@@ -122,15 +142,12 @@ The authors of `pip` **do not condone** the use of `pip` internals as they might
 without warning. As a results of this, `pip` has no capability for plugins to hook into
 specific tasks.
 
-Thus, the only way to patch `pip` s functionality is to adapt its source in-place.
-Although this is really bad practice, it is unavoidable for the goal of this package.
+`light-the-torch` works by monkey-patching `pip` internals during the installation
+process:
 
-`pystiche-pip-shim` inserts a shim into the `pip` main file, which decorates the main
-function. Everytime you call `pip install`, some aspects of the installation process are
-patched:
-
-- While searching for a download link for a PyTorch distribution, `pytorch-pip-shim`
-  replaces the default search index. This is equivalent to calling `pip install` with
-  the `-f` option only for PyTorch distributions.
-- While evaluating possible PyTorch installation candidates, `pytorch-pip-shim` culls
+- While searching for a download link for a PyTorch distribution, `light-the-torch`
+  replaces the default search index with an official PyTorch download link. This is
+  equivalent to calling `pip install` with the `-f` option only for PyTorch
+  distributions.
+- While evaluating possible PyTorch installation candidates, `light-the-torch` culls
   binaries not compatible with the available hardware.
