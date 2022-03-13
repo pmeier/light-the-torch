@@ -1,7 +1,7 @@
 import pytest
 
 from light_the_torch import cli
-from light_the_torch.computation_backend import CPUBackend
+from light_the_torch._cb import CPUBackend
 
 from .utils import exits
 

@@ -1,71 +1,156 @@
 import contextlib
+import dataclasses
+
+import enum
 import functools
+
 import optparse
 import re
 import sys
 import unittest.mock
-from typing import (
-    Any,
-    Callable,
-    cast,
-    Collection,
-    Dict,
-    Iterator,
-    List,
-    Optional,
-    Tuple,
-)
+from typing import List, Optional, Set, Tuple
 from unittest import mock
-from urllib.parse import urljoin
 
 import pip._internal.cli.cmdoptions
 import pip._internal.index.collector
 import pip._internal.index.package_finder
-from pip._internal.index.collector import LinkCollector
 from pip._internal.index.package_finder import CandidateEvaluator
 from pip._internal.models.candidate import InstallationCandidate
-from pip._internal.models.link import Link
 from pip._internal.models.search_scope import SearchScope
 
-from ._utils import (  # extract_ltt_options,
-    apply_fn_patch,
-    Channel,
-    channel_option,
-    computation_backend_options,
-    LttOptions,
-)
-from .computation_backend import ComputationBackend
+from . import _cb as cb
 
-__all__ = ["patch"]
+from ._utils import apply_fn_patch
 
-# FLATTEN EVERYTHING
 
-PATCHED_SUB_CMDS = ("install", "uninstall")
+class Channel(enum.Enum):
+    STABLE = enum.auto()
+    TEST = enum.auto()
+    NIGHTLY = enum.auto()
+    LTS = enum.auto()
+
+    @classmethod
+    def from_str(cls, string):
+        return cls[string.upper()]
+
+
 PYTORCH_DISTRIBUTIONS = ("torch", "torchvision", "torchaudio", "torchtext")
 
 
 def patch(pip_main):
     @functools.wraps(pip_main)
-    def shim(argv: Optional[List[str]] = None):
+    def wrapper(argv=None):
         if argv is None:
             argv = sys.argv[1:]
 
-        with (apply_patches if argv[0] == "install" else contextlib.nullcontext)(argv):
+        if argv[0] != "install":
             return pip_main(argv)
 
-    return shim
+        with apply_install_patches(argv):
+            return pip_main(argv)
+
+    return wrapper
 
 
-# TODO: apply install patches
+# adapted from https://stackoverflow.com/a/9307174
+class PassThroughOptionParser(optparse.OptionParser):
+    def __init__(self):
+        super().__init__(add_help_option=False)
+
+    def _process_args(self, largs, rargs, values):
+        while rargs:
+            try:
+                super()._process_args(largs, rargs, values)
+            except (optparse.BadOptionError, optparse.AmbiguousOptionError) as error:
+                largs.append(error.opt_str)
+
+
+@dataclasses.dataclass
+class LttOptions:
+    computation_backends: Set[cb.ComputationBackend] = dataclasses.field(
+        default_factory=lambda: {cb.CPUBackend()}
+    )
+    channel: Channel = Channel.STABLE
+
+    @staticmethod
+    def computation_backend_parser_options():
+        return [
+            optparse.Option(
+                "--pytorch-computation-backend",
+                "--pcb",
+                # TODO: describe multiple inputs
+                help=(
+                    "Computation backend for compiled PyTorch distributions, "
+                    "e.g. 'cu102', 'cu115', or 'cpu'. "
+                    "If not specified, the computation backend is detected from the "
+                    "available hardware, preferring CUDA over CPU."
+                ),
+            ),
+            optparse.Option(
+                "--cpuonly",
+                action="store_true",
+                help=(
+                    "Shortcut for '--pytorch-computation-backend=cpu'. "
+                    "If '--computation-backend' is used simultaneously, "
+                    "it takes precedence over '--cpuonly'."
+                ),
+            ),
+        ]
+
+    @staticmethod
+    def channel_parser_option() -> optparse.Option:
+        return optparse.Option(
+            "--pytorch-channel",
+            "--pch",
+            # FIXME add help text
+            help="",
+        )
+
+    @staticmethod
+    def _parse(argv):
+        parser = PassThroughOptionParser()
+
+        for option in LttOptions.computation_backend_parser_options():
+            parser.add_option(option)
+        parser.add_option(LttOptions.channel_parser_option())
+        parser.add_option("--pre", dest="pre", action="store_true")
+
+        opts, _ = parser.parse_args(argv)
+        return opts
+
+    @classmethod
+    def from_pip_argv(cls, argv: List[str]):
+        if argv[0] != "install":
+            return cls()
+
+        opts = cls._parse(argv)
+
+        if opts.pytorch_computation_backend is not None:
+            cbs = {
+                cb.ComputationBackend.from_str(string)
+                for string in opts.pytorch_computation_backend.split(",")
+            }
+        elif opts.cpuonly:
+            cbs = {cb.CPUBackend()}
+        else:
+            cbs = cb.detect_compatible_computation_backends()
+
+        if opts.pytorch_channel is not None:
+            channel = Channel.from_str(opts.pytorch_channel)
+        elif opts.pre:
+            channel = Channel.TEST
+        else:
+            channel = Channel.STABLE
+
+        return cls(cbs, channel)
 
 
 @contextlib.contextmanager
-def apply_patches(argv: List[str]) -> Iterator[contextlib.ExitStack]:
+def apply_install_patches(argv):
     options = LttOptions.from_pip_argv(argv)
 
     patches = [
-        patch_cli_computation_backend_options(),
-        patch_cli_channel_option(),
+        patch_cli_options(),
         patch_link_collection(options.computation_backends, options.channel),
         patch_link_evaluation(),
         patch_candidate_selection(options.computation_backends),
@@ -79,35 +164,30 @@ def apply_patches(argv: List[str]) -> Iterator[contextlib.ExitStack]:
 
 
 @contextlib.contextmanager
-def patch_cli_computation_backend_options() -> Iterator[None]:
-    def postprocessing(input, output) -> None:
-        for option in computation_backend_options():
+def patch_cli_options():
+    def postprocessing(input, output):
+        for option in LttOptions.computation_backend_parser_options():
             input.cmd_opts.add_option(option)
+
+    index_group = pip._internal.cli.cmdoptions.index_group
 
     with apply_fn_patch(
         "pip._internal.cli.cmdoptions.add_target_python_options",
         postprocessing=postprocessing,
     ):
-        yield
+        with unittest.mock.patch.dict(index_group):
+            options = index_group["options"].copy()
+            options.append(LttOptions.channel_parser_option())
+            index_group["options"] = options
+            yield
 
 
 @contextlib.contextmanager
-def patch_cli_channel_option() -> Iterator[None]:
-    index_group = pip._internal.cli.cmdoptions.index_group
-    with unittest.mock.patch.dict(index_group):
-        options = index_group["options"].copy()
-        options.append(channel_option)
-        index_group["options"] = options
-        yield
-
-
-@contextlib.contextmanager
-def patch_link_collection(
-    computation_backends: Collection[ComputationBackend], channel: Channel
-) -> Iterator[None]:
+def patch_link_collection(computation_backends, channel):
     if channel == Channel.STABLE:
         urls = ["https://download.pytorch.org/whl/torch_stable.html"]
     elif channel == Channel.LTS:
+        # TODO: expand this when there are more LTS versions
         urls = ["https://download.pytorch.org/whl/lts/1.8/torch_lts.html"]
     else:
         urls = [
@@ -132,7 +212,7 @@ def patch_link_collection(
 
 
 @contextlib.contextmanager
-def patch_link_evaluation() -> Iterator[None]:
+def patch_link_evaluation():
     HAS_LOCAL_PATTERN = re.compile(r"[+](cpu|cu\d+)$")
     COMPUTATION_BACKEND_PATTERN = re.compile(
         r"^/whl/(?P<computation_backend>(cpu|cu\d+))/"
@@ -148,11 +228,9 @@ def patch_link_evaluation() -> Iterator[None]:
             return output
 
         computation_backend = COMPUTATION_BACKEND_PATTERN.match(input.link.path)
-        if computation_backend:
-            local = computation_backend["computation_backend"]
-        else:
-            local = "any"
-
+        local = (
+            computation_backend["computation_backend"] if computation_backend else "any"
+        )
         return True, f"{result}+{local}"
 
     with apply_fn_patch(
@@ -163,9 +241,7 @@ def patch_link_evaluation() -> Iterator[None]:
 
 
 @contextlib.contextmanager
-def patch_candidate_selection(
-    computation_backends: Collection[ComputationBackend],
-) -> Iterator[None]:
+def patch_candidate_selection(computation_backends):
     allowed_locals = {None, *computation_backends}
 
     def postprocessing(
@@ -185,7 +261,9 @@ def patch_candidate_selection(
             return foo(candidate_evaluator, candidate)
 
         return (
-            ComputationBackend.from_str(candidate.version.local.replace("any", "cpu")),
+            cb.ComputationBackend.from_str(
+                candidate.version.local.replace("any", "cpu")
+            ),
             candidate.version,
         )
 

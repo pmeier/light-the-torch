@@ -2,7 +2,7 @@ import subprocess
 
 import pytest
 
-from light_the_torch import computation_backend as cb
+from light_the_torch import _cb as cb
 
 
 class TestComputationBackend:

@@ -2,18 +2,9 @@ import platform
 import re
 import subprocess
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Set
 
 from pip._vendor.packaging.version import InvalidVersion, Version
-
-__all__ = [
-    "ComputationBackend",
-    "CPUBackend",
-    "CUDABackend",
-    "detect_compatible_computation_backends",
-]
-
-# Make these singleton
 
 
 class ComputationBackend(ABC):
@@ -163,5 +154,5 @@ def _detect_compatible_cuda_backends() -> List[CUDABackend]:
     ]
 
 
-def detect_compatible_computation_backends() -> List[ComputationBackend]:
-    return sorted([*_detect_compatible_cuda_backends(), CPUBackend()])
+def detect_compatible_computation_backends() -> Set[ComputationBackend]:
+    return {*_detect_compatible_cuda_backends(), CPUBackend()}

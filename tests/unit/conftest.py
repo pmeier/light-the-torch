@@ -1,4 +1,4 @@
-import light_the_torch.computation_backend as cb
+import light_the_torch._cb as cb
 import pytest
 
 

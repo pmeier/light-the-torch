@@ -1,7 +1,7 @@
 import itertools
 
 import light_the_torch as ltt
-import light_the_torch.computation_backend as cb
+import light_the_torch._cb as cb
 
 import pytest
 from light_the_torch._pip.common import InternalLTTError
