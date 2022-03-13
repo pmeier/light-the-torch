@@ -1,8 +1,40 @@
 import subprocess
 
+from types import SimpleNamespace
+
 import pytest
 
 from light_the_torch import _cb as cb
+
+try:
+    subprocess.check_call(
+        "nvidia-smi",
+        shell=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    NVIDIA_DRIVER_AVAILABLE = True
+except subprocess.CalledProcessError:
+    NVIDIA_DRIVER_AVAILABLE = False
+
+
+skip_if_nvidia_driver_unavailable = pytest.mark.skipif(
+    not NVIDIA_DRIVER_AVAILABLE, reason="Requires nVidia driver."
+)
+
+
+class GenericComputationBackend(cb.ComputationBackend):
+    @property
+    def local_specifier(self):
+        return "generic"
+
+    def __lt__(self, other):
+        return NotImplemented
+
+
+@pytest.fixture
+def generic_backend():
+    return GenericComputationBackend()
 
 
 class TestComputationBackend:
@@ -42,7 +74,7 @@ class TestComputationBackend:
 
     @pytest.mark.parametrize("string", (("unknown", "cudnn")))
     def test_from_str_unknown(self, string):
-        with pytest.raises(cb.ParseError):
+        with pytest.raises(ValueError, match=string):
             cb.ComputationBackend.from_str(string)
 
 
@@ -70,29 +102,12 @@ class TestOrdering:
         assert cb.CUDABackend(2, 1) < cb.CUDABackend(10, 0)
 
 
-try:
-    subprocess.check_call(
-        "nvidia-smi",
-        shell=True,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    NVIDIA_DRIVER_AVAILABLE = True
-except subprocess.CalledProcessError:
-    NVIDIA_DRIVER_AVAILABLE = False
-
-
-skip_if_nvidia_driver_unavailable = pytest.mark.skipif(
-    not NVIDIA_DRIVER_AVAILABLE, reason="Requires nVidia driver."
-)
-
-
 @pytest.fixture
 def patch_nvidia_driver_version(mocker):
     def factory(version):
         return mocker.patch(
-            "light_the_torch.computation_backend.subprocess.check_output",
-            return_value=f"driver_version\n{version}".encode("utf-8"),
+            "light_the_torch._cb.subprocess.run",
+            return_value=SimpleNamespace(stdout=f"driver_version\n{version}"),
         )
 
     return factory
@@ -147,7 +162,7 @@ def cuda_backends_params():
 class TestDetectCompatibleComputationBackends:
     def test_no_nvidia_driver(self, mocker):
         mocker.patch(
-            "light_the_torch.computation_backend.subprocess.check_output",
+            "light_the_torch._cb.subprocess.run",
             side_effect=subprocess.CalledProcessError(1, ""),
         )
 
@@ -162,9 +177,7 @@ class TestDetectCompatibleComputationBackends:
         nvidia_driver_version,
         compatible_cuda_backends,
     ):
-        mocker.patch(
-            "light_the_torch.computation_backend.platform.system", return_value=system
-        )
+        mocker.patch("light_the_torch._cb.platform.system", return_value=system)
         patch_nvidia_driver_version(nvidia_driver_version)
 
         backends = cb.detect_compatible_computation_backends()
