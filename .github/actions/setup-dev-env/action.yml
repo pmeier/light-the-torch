@@ -20,7 +20,7 @@ runs:
 
     - name: appdir
       shell: bash
-      run: echo $(python -c "import appdirs; appdirs.user_cache_dir('pip')")
+      run: echo $(python -c "import appdirs; print(appdirs.user_cache_dir('pip'))")
 
     - name: Get pip cache path
       id: get-cache-path
