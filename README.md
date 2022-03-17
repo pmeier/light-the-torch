@@ -47,7 +47,7 @@ computation backend, the version has to be specified exactly. Without knowing wh
 latest release is, it is impossible to install it as simple as `pip install torch`
 normally would.
 
-At this point you might justifiably as: why don't you just use `conda` as PyTorch
+At this point you might justifiably ask: why don't you just use `conda` as PyTorch
 recommends?
 
 ```shell
