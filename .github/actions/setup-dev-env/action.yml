@@ -41,8 +41,8 @@ runs:
       with:
         fetch-depth: 0
 
-    - name: Setup development environment
+    - name: Install development requirements and project
       shell: bash
       run: |
         pip install doit
-        doit setup
+        doit install
