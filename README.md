@@ -16,12 +16,6 @@ without user interference.
 
 ## Why do I need it?
 
----
-
-TL;DR: TODO
-
----
-
 PyTorch distributions are fully `pip install`'able, but PyPI, the default `pip` search
 index, has some limitations:
 
@@ -41,11 +35,11 @@ index, has some limitations:
 
 To overcome this, PyTorch also hosts _all_ binaries
 [themselves](https://download.pytorch.org/whl/torch_stable.html). To access them, you
-still can use `pip install`, but have to use some
+still can `pip install` them, but have to use some
 [additional options](https://pytorch.org/get-started/locally/):
 
 ```shell
-pip install torch==1.11.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+pip install torch==1.11.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
 ```
 
 While this is certainly an improvement, it also has it downside: in addition to the
@@ -57,39 +51,41 @@ At this point you might justifiably as: why don't you just use `conda` as PyTorc
 recommends?
 
 ```shell
-conda install pytorch cpuonly -c pytorch
+conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
 ```
 
-This should cover all cases, right? Well, no. The above command is only enough if you
-just need PyTorch.
+This should cover all cases, right? Well, no. Let's first have a look at this from a
+user perspective: You still have to manually specify the computation backend. Of course,
+you can drop the `=11.3` above, but this would give you the latest `cudatoolkit`, which
+might not be compatible with the local setup. Plus, if you don't have access to a GPU,
+you need to manually swap `cudatoolkit` for `cpuonly`.
 
----
+Now imagine you are the author of a library that depends on PyTorch and targets a
+broader audience than just experts: the scenario above can be bad, because new users
+need to jump through additional hoops. In addition, new users might not be familiar with
+`conda`, whereas almost every Python tutorial features a short introduction to `pip`.
 
-TODO
+If you go `conda` nonetheless, you'll now have to decide how you want to publish your
+library. The obvious choice would be to publish on the
+[conda-forge](https://conda-forge.org/) channel to benefit from all their
+infrastructure. Unfortunately, this is not as easy as it sounds: conda-forge does not
+allow your package to depend on packages hosted in different channels. PyTorch publishes
+the binaries to their own channels (`-c pytorch`) and so you cannot depend on the
+official binaries. There is a
+[community package](https://github.com/conda-forge/pytorch-cpu-feedstock), but it only
+publishes CPU binaries. Additionally, there are a few
+[binaries with CUDA support](https://anaconda.org/conda-forge/pytorch), but the range is
+limited with no support for Windows and only selected CUDA versions for Linux. Thus, if
+you don't want to limit you options, you would have to setup and maintain your own
+channel.
 
-Otherwise
-
-if you are a library author
-
-pip is the most prominent package manager it is thus almost set to also publish your
-package to PyPI Now, how do you tell your users to install your lbrary?
-
-Imagine the case of a package that depends on PyTorch, but cannot be installed with
-`conda` since it is hosted on PyPI? You can't use the `-f` option since the package in
-question is not hosted by PyTorch. Thus, you now have to manually track down (and
-resolve in the case of multiple packages) the PyTorch distributions, install them in a
-first step and only install the actual package (and all other dependencies) afterwards.
-
-2. The most prominent public conda channel is conda-forge.
-
-If just want to use `pip install` like you always did before without worrying about any
-of the stuff above, `light-the-torch` was made for you.
-
----
+If any of the stuff doesn't sound appealing to you and you just want to have the same
+user experience as `pip install` for PyTorch distributions, `light-the-torch` was made
+for you.
 
 ## How do I install it?
 
-Installing `pytorch-pip-shim` is as easy as
+Installing `light-the-torch` is as easy as
 
 ```shell
 pip install light-the-torch
@@ -115,16 +111,16 @@ ltt install torch
 In fact, `ltt` is `pip` with a few added options:
 
 - By default, `ltt` uses the local NVIDIA driver version to select the correct binary
-  for you. You can pass the `--pytorch-computation-backend` / `--pcb` option to manually
-  specify the computation backend you want to use:
+  for you. You can pass the `--pytorch-computation-backend` option to manually specify
+  the computation backend you want to use:
 
   ```shell
   ltt install --pytorch-computation-backend=cu102 torch
   ```
 
 - By default, `ltt` installs stable PyTorch binaries. In addition, PyTorch provides
-  nightly, test, and LTS binaries. You can switch the channel you want to install from
-  with the `--pytorch-channel` / `--pch` option:
+  nightly, test, and long-time support (LTS) binaries. You can switch the channel you
+  want to install from with the `--pytorch-channel` option:
 
   ```shell
   ltt install --pytorch-channel=nightly torch
@@ -133,8 +129,12 @@ In fact, `ltt` is `pip` with a few added options:
   If the channel option is not passed, using `pip`'s builtin `--pre` option will install
   PyTorch test binaries.
 
-Of course you are not limited to install only PyTorch distributions. Everything detailed
-above also works if you install packages that depend on PyTorch.
+Of course you are not limited to install only PyTorch distributions. Everything shown
+above also works if you install packages that depend on PyTorch:
+
+```shell
+ltt install --pytorch-computation-backend=cpu --pytorch-channel=nightly pystiche
+```
 
 ## How does it work?
 
@@ -142,8 +142,7 @@ The authors of `pip` **do not condone** the use of `pip` internals as they might
 without warning. As a results of this, `pip` has no capability for plugins to hook into
 specific tasks.
 
-`light-the-torch` works by monkey-patching `pip` internals during the installation
-process:
+`light-the-torch` works by monkey-patching `pip` internals at runtime:
 
 - While searching for a download link for a PyTorch distribution, `light-the-torch`
   replaces the default search index with an official PyTorch download link. This is
