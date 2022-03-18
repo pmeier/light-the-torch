@@ -117,7 +117,7 @@ class LttOptions:
 
     @classmethod
     def from_pip_argv(cls, argv: List[str]):
-        if argv[0] != "install":
+        if not argv or argv[0] != "install":
             return cls()
 
         opts = cls._parse(argv)
