@@ -1,4 +1,3 @@
-import itertools
 import os
 import pathlib
 import shlex
@@ -25,16 +24,25 @@ def do(*cmd):
     return CmdAction(cmd, shell=False, cwd=HERE)
 
 
-def task_install(pip="python -m pip"):
+def _install_dev_requirements(pip="python -m pip"):
+    return f"{pip} install -r requirements-dev.txt"
+
+
+def _install_project(pip="python -m pip"):
+    return f"{pip} install -e ."
+
+
+def task_install():
     """Installs all development requirements and light-the-torch in development mode"""
     yield dict(
-        name="requirements",
-        actions=[do(f"{pip} install -r requirements-dev.txt")],
+        name="dev",
+        file_dep=[HERE / "requirements-dev.txt"],
+        actions=[do(_install_dev_requirements())],
     )
     yield dict(
-        name="install",
+        name="project",
         actions=[
-            do(f"{pip} install -e ."),
+            do(_install_project()),
         ],
     )
 
@@ -42,13 +50,12 @@ def task_install(pip="python -m pip"):
 def task_setup():
     """Sets up a development environment for light-the-torch"""
     dev_env = HERE / ".venv"
+    pip = dev_env / "bin" / "pip"
     return dict(
         actions=[
             do(f"virtualenv {dev_env} --prompt='(light-the-torch-dev) '"),
-            *itertools.chain.from_iterable(
-                sub_task["actions"]
-                for sub_task in task_install(dev_env / "bin" / "pip")
-            ),
+            do(_install_dev_requirements(pip)),
+            do(_install_project(pip)),
             lambda: print(
                 f"run `source {dev_env / 'bin' / 'activate'}` the virtual environment"
             ),
