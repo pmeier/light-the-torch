@@ -1,11 +1,18 @@
 import contextlib
 import io
+import shlex
+import subprocess
 import sys
 
 import light_the_torch as ltt
 import pytest
 
 from light_the_torch._cli import main
+
+
+@pytest.mark.parametrize("cmd", ["ltt", "python -m light_the_torch"])
+def test_entry_point_smoke(cmd):
+    subprocess.run(shlex.split(cmd), shell=False)
 
 
 @contextlib.contextmanager
