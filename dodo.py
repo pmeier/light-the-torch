@@ -13,6 +13,11 @@ CI = os.environ.get("CI") == "1"
 DOIT_CONFIG = dict(
     verbosity=2,
     backend="json",
+    default_tasks=[
+        "lint",
+        "publishable",
+        "test",
+    ],
 )
 
 
