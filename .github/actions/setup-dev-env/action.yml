@@ -19,8 +19,7 @@ runs:
       shell: bash
       run: |
         pip install appdirs
-        CACHE_PATH= \
-          `python -c "import appdirs; print(appdirs.user_cache_dir('pip', appauthor=False))"`
+        CACHE_PATH=`python -c "import appdirs; print(appdirs.user_cache_dir('pip', appauthor=False))"`
         echo "::set-output name=path::$CACHE_PATH"
 
     - name: Restore pip cache
