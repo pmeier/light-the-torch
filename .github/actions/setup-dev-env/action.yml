@@ -32,7 +32,7 @@ runs:
 
     - name: Upgrade or install system packages
       shell: bash
-      run: python -m pip install --upgrade pip wheel appdirs
+      run: python -m pip install --upgrade pip wheel
 
     - name: Checkout repository
       uses: actions/checkout@v2
