@@ -319,15 +319,15 @@ Python
 
 .. |lint|
   image:: https://github.com/pmeier/light-the-torch/workflows/lint/badge.svg
-    :target: https://github.com/pmeier/light-the-torch/actions?query=workflow%3Alint+branch%3Amaster
+    :target: https://github.com/pmeier/light-the-torch/actions?query=workflow%3Alint+branch%3Amain
     :alt: Lint status via GitHub Actions
 
 .. |tests|
   image:: https://github.com/pmeier/light-the-torch/workflows/tests/badge.svg
-    :target: https://github.com/pmeier/light-the-torch/actions?query=workflow%3Atests+branch%3Amaster
+    :target: https://github.com/pmeier/light-the-torch/actions?query=workflow%3Atests+branch%3Amain
     :alt: Test status via GitHub Actions
 
 .. |coverage|
-  image:: https://codecov.io/gh/pmeier/light-the-torch/branch/master/graph/badge.svg
+  image:: https://codecov.io/gh/pmeier/light-the-torch/branch/main/graph/badge.svg
     :target: https://codecov.io/gh/pmeier/light-the-torch
     :alt: Test coverage via codecov.io
