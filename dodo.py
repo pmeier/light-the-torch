@@ -15,8 +15,8 @@ DOIT_CONFIG = dict(
     backend="json",
     default_tasks=[
         "lint",
-        "publishable",
         "test",
+        "publishable",
     ],
 )
 
@@ -90,19 +90,8 @@ def task_lint():
 
 def task_test():
     """Runs the test suite"""
-
-    def run(passthrough):
-        return [
-            "pytest",
-            "-c",
-            HERE / "pytest.ini",
-            f"--cov-report={'xml' if CI else 'term'}",
-            *passthrough,
-        ]
-
     return dict(
-        actions=[do(run)],
-        pos_arg="passthrough",
+        actions=[do(f"pytest -c pytest.ini --cov-report={'xml' if CI else 'term'}")],
     )
 
 
