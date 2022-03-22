@@ -8,7 +8,7 @@ import optparse
 import re
 import sys
 import unittest.mock
-from typing import List, Optional, Set, Tuple
+from typing import List, Set
 from unittest import mock
 
 import pip._internal.cli.cmdoptions
@@ -150,7 +150,6 @@ def apply_patches(argv):
         patch_cli_version(),
         patch_cli_options(),
         patch_link_collection(options.computation_backends, options.channel),
-        patch_link_evaluation(),
         patch_candidate_selection(options.computation_backends),
     ]
 
@@ -205,6 +204,7 @@ def patch_link_collection(computation_backends, channel):
         # TODO: expand this when there are more LTS versions
         urls = ["https://download.pytorch.org/whl/lts/1.8/torch_lts.html"]
     else:
+        # TODO: this template is not valid for all backends
         urls = [
             f"https://download.pytorch.org/whl/"
             f"{channel.name.lower()}/{backend}/torch_{channel.name.lower()}.html"
@@ -234,45 +234,11 @@ def patch_link_collection(computation_backends, channel):
 
 
 @contextlib.contextmanager
-def patch_link_evaluation():
-    HAS_LOCAL_PATTERN = re.compile(r"[+](cpu|cu\d+)$")
-    COMPUTATION_BACKEND_PATTERN = re.compile(
-        r"^/whl/(?P<computation_backend>(cpu|cu\d+))/"
-    )
-
-    def postprocessing(input, output: Tuple[bool, Optional[str]]):
-        if input.self.project_name not in PYTORCH_DISTRIBUTIONS:
-            return output
-
-        is_candidate, result = output
-        if not is_candidate:
-            return output
-
-        has_local = HAS_LOCAL_PATTERN.search(result) is not None
-        if has_local:
-            return output
-
-        computation_backend = COMPUTATION_BACKEND_PATTERN.match(input.link.path)
-        local = (
-            computation_backend["computation_backend"] if computation_backend else "any"
-        )
-        return True, f"{result}+{local}"
-
-    with apply_fn_patch(
-        "pip",
-        "_internal",
-        "index",
-        "package_finder",
-        "LinkEvaluator",
-        "evaluate_link",
-        postprocessing=postprocessing,
-    ):
-        yield
-
-
-@contextlib.contextmanager
 def patch_candidate_selection(computation_backends):
     allowed_locals = {None, *computation_backends}
+    computation_backend_pattern = re.compile(
+        r"^/whl/(?P<computation_backend>(cpu|cu\d+))/"
+    )
 
     def postprocessing(
         input, output: List[InstallationCandidate]
@@ -290,10 +256,14 @@ def patch_candidate_selection(computation_backends):
         if candidate.name not in PYTORCH_DISTRIBUTIONS:
             return foo(candidate_evaluator, candidate)
 
+        if candidate.version.local is not None:
+            computation_backend_str = candidate.version.local.replace("any", "cpu")
+        else:
+            match = computation_backend_pattern.match(candidate.link.path)
+            computation_backend_str = match["computation_backend"] if match else "cpu"
+
         return (
-            cb.ComputationBackend.from_str(
-                candidate.version.local.replace("any", "cpu")
-            ),
+            cb.ComputationBackend.from_str(computation_backend_str),
             candidate.version,
         )
 
