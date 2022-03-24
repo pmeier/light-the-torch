@@ -244,8 +244,11 @@ def patch_candidate_selection(computation_backends):
         input.candidates = [
             candidate
             for candidate in input.candidates
-            if candidate.version.local is not None
-            and "rocm" not in candidate.version.local
+            if candidate.name not in PYTORCH_DISTRIBUTIONS
+            or (
+                candidate.version.local is not None
+                and "rocm" not in candidate.version.local
+            )
         ]
         return input
 
