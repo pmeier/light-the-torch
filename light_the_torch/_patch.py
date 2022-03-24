@@ -240,6 +240,15 @@ def patch_candidate_selection(computation_backends):
         r"^/whl/(?P<computation_backend>(cpu|cu\d+))/"
     )
 
+    def preprocessing(input):
+        input.candidates = [
+            candidate
+            for candidate in input.candidates
+            if candidate.version.local is not None
+            and "rocm" not in candidate.version.local
+        ]
+        return input
+
     def postprocessing(
         input, output: List[InstallationCandidate]
     ) -> List[InstallationCandidate]:
@@ -274,6 +283,7 @@ def patch_candidate_selection(computation_backends):
         "package_finder",
         "CandidateEvaluator",
         "get_applicable_candidates",
+        preprocessing=preprocessing,
         postprocessing=postprocessing,
     ):
         with unittest.mock.patch.object(CandidateEvaluator, "_sort_key", new=sort_key):
