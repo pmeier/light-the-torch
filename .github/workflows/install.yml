@@ -22,6 +22,7 @@ jobs:
           - "3.9"
           - "3.10"
         pytorch-channel:
+          - ""
           - stable
           - test
           - nightly
@@ -47,7 +48,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install torch
-        run: ltt install --cpuonly --pytorch-channel=${{ matrix.pytorch-channel }} torch
+        env:
+          CHANNEL: ${{ matrix.pytorch-channel }}
+        run: ltt install --cpuonly ${CHANNEL:+--pytorch-channel=$CHANNEL} torch
 
       - name: Check if CPU only
         run:
