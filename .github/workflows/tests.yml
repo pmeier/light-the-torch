@@ -89,3 +89,8 @@ jobs:
 
       - name: Install torch
         run: ltt install --cpuonly torch
+
+      - name: Check if CPU only
+        run:
+          python -c "import sys, torch; sys.exit(hasattr(torch._C,
+          '_cuda_getDeviceCount'))"
