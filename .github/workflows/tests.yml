@@ -60,3 +60,32 @@ jobs:
         with:
           flags: unit
           env_vars: OS,PYTHON_VERSION
+
+  torch_cpu_install_smoke:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+        python-version:
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.10"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup development environment
+        uses: ./.github/actions/setup-dev-env
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install torch
+        run: ltt install --cpuonly torch
