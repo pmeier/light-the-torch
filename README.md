@@ -67,11 +67,11 @@ pip install --pre light-the-torch
 ```
 
 Since it depends on `pip` and it might be upgraded during installation,
-[Windows users](https://pip.pypa.io/en/stable/installing/#upgrading-pip) should install
-it with
+[Windows users](https://pip.pypa.io/en/stable/installation/#upgrading-pip) should
+install it with
 
 ```shell
-python -m pip install --pre light-the-torch
+py -m pip install --pre light-the-torch
 ```
 
 ## How do I use it?
