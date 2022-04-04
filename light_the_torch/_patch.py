@@ -198,19 +198,22 @@ def patch_cli_options():
 
 @contextlib.contextmanager
 def patch_link_collection(computation_backends, channel):
-    if channel == Channel.STABLE:
-        urls = ["https://download.pytorch.org/whl/torch_stable.html"]
-    elif channel == Channel.LTS:
-        # TODO: expand this when there are more LTS versions
-        urls = ["https://download.pytorch.org/whl/lts/1.8/torch_lts.html"]
-    else:
+    if channel == channel != Channel.LTS:
+        find_links = []
         # TODO: this template is not valid for all backends
-        urls = [
-            f"https://download.pytorch.org/whl/"
-            f"{channel.name.lower()}/{backend}/torch_{channel.name.lower()}.html"
+        channel_path = f"{channel.name.lower()}/" if channel != Channel.STABLE else ""
+        index_urls = [
+            f"https://download.pytorch.org/whl/{channel_path}{backend}"
             for backend in sorted(computation_backends)
         ]
-    search_scope = SearchScope.create(find_links=urls, index_urls=[])
+    else:
+        # TODO: expand this when there are more LTS versions
+        # TODO: switch this to index_urls when
+        #  https://github.com/pytorch/pytorch/pull/74753 is resolved
+        find_links = ["https://download.pytorch.org/whl/lts/1.8/torch_lts.html"]
+        index_urls = []
+
+    search_scope = SearchScope.create(find_links=find_links, index_urls=index_urls)
 
     @contextlib.contextmanager
     def context(input):
