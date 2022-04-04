@@ -1,2 +1,12 @@
-tox >= 3.2
+doit
+# format & lint
 pre-commit
+flake8 ==4.0.1
+# test
+pytest
+pytest-mock
+pytest-cov
+# publish
+build
+twine
+check-wheel-contents

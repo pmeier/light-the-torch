@@ -2,21 +2,9 @@ import platform
 import re
 import subprocess
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Set
+from typing import Any, List, Optional, Set
 
 from pip._vendor.packaging.version import InvalidVersion, Version
-
-__all__ = [
-    "ComputationBackend",
-    "CPUBackend",
-    "CUDABackend",
-    "detect_compatible_computation_backends",
-]
-
-
-class ParseError(ValueError):
-    def __init__(self, string: str) -> None:
-        super().__init__(f"Unable to parse {string} into a computation backend")
 
 
 class ComputationBackend(ABC):
@@ -45,8 +33,8 @@ class ComputationBackend(ABC):
 
     @classmethod
     def from_str(cls, string: str) -> "ComputationBackend":
-        parse_error = ParseError(string)
-        string = string.lower()
+        parse_error = ValueError(f"Unable to parse {string} into a computation backend")
+        string = string.strip().lower()
         if string == "cpu":
             return CPUBackend()
         elif string.startswith("cu"):
@@ -97,21 +85,30 @@ class CUDABackend(ComputationBackend):
 
 
 def _detect_nvidia_driver_version() -> Optional[Version]:
-    cmd = "nvidia-smi --query-gpu=driver_version --format=csv"
     try:
-        output = (
-            subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL)
-            .decode("utf-8")
-            .strip()
+        result = subprocess.run(
+            [
+                "nvidia-smi",
+                "--query-gpu=driver_version",
+                "--format=csv",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
         )
-        return Version(output.splitlines()[-1])
-    except (subprocess.CalledProcessError, InvalidVersion):
+        return Version(result.stdout.splitlines()[-1])
+    except (FileNotFoundError, subprocess.CalledProcessError, InvalidVersion):
         return None
 
 
 # Table 3 from https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html
 _MINIMUM_DRIVER_VERSIONS = {
     "Linux": {
+        Version("11.6"): Version("510.39.01"),
+        Version("11.5"): Version("495.29.05"),
+        Version("11.4"): Version("470.82.01"),
+        Version("11.3"): Version("465.19.01"),
+        Version("11.2"): Version("460.32.03"),
         Version("11.1"): Version("455.32"),
         Version("11.0"): Version("450.51.06"),
         Version("10.2"): Version("440.33"),
@@ -121,9 +118,13 @@ _MINIMUM_DRIVER_VERSIONS = {
         Version("9.1"): Version("390.46"),
         Version("9.0"): Version("384.81"),
         Version("8.0"): Version("375.26"),
-        Version("7.5"): Version("352.31"),
     },
     "Windows": {
+        Version("11.6"): Version("511.23"),
+        Version("11.5"): Version("496.13"),
+        Version("11.4"): Version("472.50"),
+        Version("11.3"): Version("465.89"),
+        Version("11.2"): Version("461.33"),
         Version("11.1"): Version("456.81"),
         Version("11.0"): Version("451.82"),
         Version("10.2"): Version("441.22"),
@@ -133,26 +134,25 @@ _MINIMUM_DRIVER_VERSIONS = {
         Version("9.1"): Version("391.29"),
         Version("9.0"): Version("385.54"),
         Version("8.0"): Version("376.51"),
-        Version("7.5"): Version("353.66"),
     },
 }
 
 
-def _detect_compatible_cuda_backends() -> Set[CUDABackend]:
+def _detect_compatible_cuda_backends() -> List[CUDABackend]:
     driver_version = _detect_nvidia_driver_version()
     if not driver_version:
-        return set()
+        return []
 
     minimum_driver_versions = _MINIMUM_DRIVER_VERSIONS.get(platform.system())
     if not minimum_driver_versions:
-        return set()
+        return []
 
-    return {
+    return [
         CUDABackend(cuda_version.major, cuda_version.minor)
         for cuda_version, minimum_driver_version in minimum_driver_versions.items()
         if driver_version >= minimum_driver_version
-    }
+    ]
 
 
 def detect_compatible_computation_backends() -> Set[ComputationBackend]:
-    return {CPUBackend(), *_detect_compatible_cuda_backends()}
+    return {*_detect_compatible_cuda_backends(), CPUBackend()}
