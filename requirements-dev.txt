@@ -10,3 +10,6 @@ pytest-cov
 build
 twine
 check-wheel-contents
+# misc
+requests
+beautifulsoup4
