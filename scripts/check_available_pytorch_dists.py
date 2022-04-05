@@ -7,6 +7,7 @@ from light_the_torch._cb import _MINIMUM_DRIVER_VERSIONS, CPUBackend, CUDABacken
 
 from light_the_torch._patch import Channel, get_extra_index_urls, PYTORCH_DISTRIBUTIONS
 
+PATCHED_PYTORCH_DISTRIBUTIONS = set(PYTORCH_DISTRIBUTIONS)
 
 COMPUTATION_BACKENDS = {
     CUDABackend(cuda_version.major, cuda_version.minor)
@@ -30,8 +31,8 @@ def main():
 
         available.update(tag.string for tag in soup.find_all(name="a"))
 
-    missing = available - PYTORCH_DISTRIBUTIONS
-    extra = PYTORCH_DISTRIBUTIONS - available
+    missing = available - PATCHED_PYTORCH_DISTRIBUTIONS
+    extra = PATCHED_PYTORCH_DISTRIBUTIONS - available
     if not (missing or extra):
         return
 
