@@ -6,20 +6,20 @@ on:
       - main
       - releases/*
 
-  pull_request:
-    paths:
-      - ".github/workflows/publishable.yml"
-      - ".github/actions/setup-dev-env/**"
-      - "light_the_torch/**"
-      - ".gitignore"
-      - "CONTRIBUTING.rst"
-      - "dodo.py"
-      - "LICENSE"
-      - "MANIFEST.in"
-      - "pyproject.toml"
-      - "README.rst"
-      - "requirements-dev.txt"
-      - "setup.cfg"
+#  pull_request:
+#    paths:
+#      - ".github/workflows/publishable.yml"
+#      - ".github/actions/setup-dev-env/**"
+#      - "light_the_torch/**"
+#      - ".gitignore"
+#      - "CONTRIBUTING.rst"
+#      - "dodo.py"
+#      - "LICENSE"
+#      - "MANIFEST.in"
+#      - "pyproject.toml"
+#      - "README.rst"
+#      - "requirements-dev.txt"
+#      - "setup.cfg"
 
 jobs:
   pypi:
