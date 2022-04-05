@@ -26,8 +26,8 @@ jobs:
         id: pytorch-dists
         run: |
           PYTORCH_DISTS=$(python scripts/check_available_pytorch_dists.py)
-          echo "::set-output name=pytorch-dists::PYTORCH_DISTS"
-          [[ -n $PYTORCH_DISTRIBUTIONS ]] && {echo $PYTORCH_DISTS; exit 1;}
+          echo "::set-output name=pytorch-dists::$PYTORCH_DISTS"
+          [[ -n "$PYTORCH_DISTRIBUTIONS" ]] && {echo "$PYTORCH_DISTS"; exit 1;}
 
       - uses: JasonEtco/create-an-issue@v2.6.0
         if: failure() && github.event_name == 'schedule'
