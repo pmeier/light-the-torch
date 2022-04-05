@@ -5,9 +5,9 @@ exclude .coveragerc
 exclude .flake8
 exclude .gitignore
 exclude .pre-commit-config.yaml
+exclude .prettierrc.yaml
 exclude codecov.yml
 exclude dodo.py
 exclude MANIFEST.in
-exclude mypy.ini
 exclude pytest.ini
 exclude requirements-dev.txt

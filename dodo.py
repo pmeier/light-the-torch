@@ -1,3 +1,4 @@
+import itertools
 import os
 import pathlib
 import shlex
@@ -8,7 +9,7 @@ from doit.action import CmdAction
 HERE = pathlib.Path(__file__).parent
 PACKAGE_NAME = "light_the_torch"
 
-CI = os.environ.get("CI") == "1"
+CI = os.environ.get("CI") == "true"
 
 DOIT_CONFIG = dict(
     verbosity=2,
@@ -21,20 +22,12 @@ DOIT_CONFIG = dict(
 )
 
 
-def do(*cmd):
-    if len(cmd) == 1:
+def do(*cmd, cwd=HERE):
+    if len(cmd) == 1 and callable(cmd[0]):
         cmd = cmd[0]
-    if isinstance(cmd, str):
-        cmd = shlex.split(cmd)
-    return CmdAction(cmd, shell=False, cwd=HERE)
-
-
-def _install_dev_requirements(pip="python -m pip"):
-    return f"{pip} install -r requirements-dev.txt"
-
-
-def _install_project(pip="python -m pip"):
-    return f"{pip} install -e ."
+    else:
+        cmd = list(itertools.chain.from_iterable(shlex.split(part) for part in cmd))
+    return CmdAction(cmd, shell=False, cwd=cwd)
 
 
 def task_install():
@@ -42,31 +35,11 @@ def task_install():
     yield dict(
         name="dev",
         file_dep=[HERE / "requirements-dev.txt"],
-        actions=[do(_install_dev_requirements())],
+        actions=[do("pip install --upgrade -r requirements-dev.txt")],
     )
     yield dict(
         name="project",
-        actions=[
-            do(_install_project()),
-        ],
-    )
-
-
-def task_setup():
-    """Sets up a development environment for light-the-torch"""
-    dev_env = HERE / ".venv"
-    pip = dev_env / "bin" / "pip"
-    return dict(
-        actions=[
-            do(f"virtualenv {dev_env} --prompt='(light-the-torch-dev) '"),
-            do(_install_dev_requirements(pip)),
-            do(_install_project(pip)),
-            lambda: print(
-                f"run `source {dev_env / 'bin' / 'activate'}` the virtual environment"
-            ),
-        ],
-        clean=[do(f"rm -rf {dev_env}")],
-        uptodate=[lambda: dev_env.exists()],
+        actions=[do("ltt install -e .")],
     )
 
 
@@ -84,19 +57,24 @@ def task_lint():
     return dict(
         actions=[
             do("flake8 --config=.flake8"),
-        ]
+        ],
     )
 
 
 def task_test():
     """Runs the test suite"""
     return dict(
-        actions=[do(f"pytest -c pytest.ini --cov-report={'xml' if CI else 'term'}")],
+        actions=[
+            do(
+                "pytest -c pytest.ini",
+                f"--cov-report={'xml' if CI else 'term'}",
+            )
+        ]
     )
 
 
 def task_build():
-    """Builds the source distribution and wheel of light-the-torch"""
+    """Builds the source distribution and wheel"""
     return dict(
         actions=[
             do("python -m build ."),
@@ -129,7 +107,8 @@ def task_publishable():
 
 
 def task_publish():
-    """Publishes light-the-torch to PyPI"""
+    """Publishes to PyPI"""
+    # TODO: check if env vars are set
     return dict(
         # We need the lambda here to lazily glob the files in dist/*, since they are
         # only created by the build task rather than when this task is created.

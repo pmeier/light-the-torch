@@ -13,6 +13,7 @@ without user interference.
 - [How do I install it?](#how-do-i-install-it)
 - [How do I use it?](#how-do-i-use-it)
 - [How does it work?](#how-does-it-work)
+- [How do I contribute?](#how-do-i-contribute)
 
 ## Why do I need it?
 
@@ -48,11 +49,12 @@ While this is certainly an improvement, it still has a few downsides:
    your local machine. This can be quite challenging for new users and at least tedious
    for more experienced ones.
 2. Besides the stable binaries, PyTorch also offers nightly, test, and long-time support
-   (LTS) ones. To install them, you need a different `--extra-index-url` value for each.
-   For the nightly and test channel you also need to supply the `--pre` option.
+   (LTS) ones. To install them, you need a different `--extra-index-url` for each. For
+   the nightly and test channel you also need to supply the `--pre` option.
 3. If you want to install any package hosted on PyPI that depends on PyTorch, you always
-   also specify all PyTorch distributions to install. Otherwise, the `--extra-index-url`
-   flag is ignored and the PyTorch distributions hosted on PyPI will be installed.
+   also need to specify all needed PyTorch distributions in the `pip install` command.
+   Otherwise, the `--extra-index-url` flag is ignored and the PyTorch distributions
+   hosted on PyPI will be installed.
 
 If any of these points don't sound appealing to you, and you just want to have the same
 user experience as `pip install` for PyTorch distributions, `light-the-torch` was made
@@ -93,8 +95,8 @@ In fact, `ltt` is `pip` with a few added options:
   ltt install --pytorch-computation-backend=cu102 torch
   ```
 
-- By default, `ltt` installs stable PyTorch binaries. To install binaries from nightly,
-  test, or LTS channels pass the `--pytorch-channel` option:
+- By default, `ltt` installs stable PyTorch binaries. To install binaries from the
+  nightly, test, or LTS channels pass the `--pytorch-channel` option:
 
   ```shell
   ltt install --pytorch-channel=nightly torch
@@ -103,7 +105,7 @@ In fact, `ltt` is `pip` with a few added options:
   If `--pytorch-channel` is not passed, using `pip`'s builtin `--pre` option will
   install PyTorch test binaries.
 
-Of course you are not limited to install only PyTorch distributions. Everything shown
+Of course, you are not limited to install only PyTorch distributions. Everything shown
 above also works if you install packages that depend on PyTorch:
 
 ```shell
@@ -124,3 +126,14 @@ specific tasks.
   PyTorch distributions.
 - While evaluating possible PyTorch installation candidates, `light-the-torch` culls
   binaries incompatible with the hardware.
+
+## How do I contribute?
+
+Thanks a lot for your interest to contribute to `light-the-torch`! All contributions are
+appreciated, be it code or not. Especially in a project like this, we rely on user
+reports for edge cases we didn't anticipate. Please feel free to
+[open an issue](https://github.com/pmeier/light-the-torch/issues) if you encounter
+anything that you think should be working but doesn't.
+
+If you want to contribute code, check out our [contributing guidelines](CONTRIBUTING.md)
+to learn more about the workflow.
