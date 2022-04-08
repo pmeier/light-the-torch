@@ -6,7 +6,7 @@ on:
       - main
       - releases/*
 
-#  pull_request:
+  pull_request:
 
 jobs:
   check:
