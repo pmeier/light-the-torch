@@ -33,8 +33,10 @@ EXTRA_INDEX_URLS = set(
 def main():
     available = set()
     for url in EXTRA_INDEX_URLS:
-        print(url)
         response = requests.get(url)
+        if not response.ok:
+            continue
+
         soup = BeautifulSoup(response.text, features="html.parser")
 
         available.update(tag.string for tag in soup.find_all(name="a"))

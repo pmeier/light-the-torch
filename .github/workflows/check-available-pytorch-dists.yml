@@ -29,11 +29,11 @@ jobs:
           PYTORCH_DISTS=$(python scripts/check_available_pytorch_dists.py)
           [[ -n "$PYTORCH_DISTRIBUTIONS" ]] && {echo "$PYTORCH_DISTS"; exit 1;}
 
-#      - uses: JasonEtco/create-an-issue@v2.6.0
-#        if: failure() && github.event_name == 'schedule'
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          PYTORCH_DISTRIBUTIONS:
-#            ${{ fromJSON(steps.pytorch-dists.outputs.pytorch-dists) }}
-#        with:
-#          filename: .github/incorrect_pytorch_dists_issue_template.md
+      - uses: JasonEtco/create-an-issue@v2.6.0
+        if: failure() && github.event_name == 'schedule'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTORCH_DISTRIBUTIONS:
+            ${{ toJSON(steps.pytorch-dists.outputs.pytorch-dists) }}
+        with:
+          filename: .github/incorrect_pytorch_dists_issue_template.md
