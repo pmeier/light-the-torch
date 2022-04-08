@@ -36,7 +36,18 @@ class Channel(enum.Enum):
         return cls[string.upper()]
 
 
-PYTORCH_DISTRIBUTIONS = ("torch", "torchvision", "torchaudio", "torchtext")
+PYTORCH_DISTRIBUTIONS = {
+    "torch",
+    "torch_model_archiver",
+    "torch_tb_profiler",
+    "torcharrow",
+    "torchaudio",
+    "torchcsprng",
+    "torchdata",
+    "torchserve",
+    "torchtext",
+    "torchvision",
+}
 
 
 def patch(pip_main):
@@ -196,16 +207,20 @@ def patch_cli_options():
             yield
 
 
+def get_extra_index_urls(computation_backends, channel):
+    # TODO: this template is not valid for all backends
+    channel_path = f"{channel.name.lower()}/" if channel != Channel.STABLE else ""
+    return [
+        f"https://download.pytorch.org/whl/{channel_path}{backend}"
+        for backend in sorted(computation_backends)
+    ]
+
+
 @contextlib.contextmanager
 def patch_link_collection(computation_backends, channel):
     if channel == channel != Channel.LTS:
         find_links = []
-        # TODO: this template is not valid for all backends
-        channel_path = f"{channel.name.lower()}/" if channel != Channel.STABLE else ""
-        index_urls = [
-            f"https://download.pytorch.org/whl/{channel_path}{backend}"
-            for backend in sorted(computation_backends)
-        ]
+        index_urls = get_extra_index_urls(computation_backends, channel)
     else:
         # TODO: expand this when there are more LTS versions
         # TODO: switch this to index_urls when

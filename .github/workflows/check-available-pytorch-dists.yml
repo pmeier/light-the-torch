@@ -1,0 +1,39 @@
+name: check-available-pytorch-dists
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/check-available-pytorch-dists.yml"
+      - "scripts/check_available_pytorch_dists.py"
+
+  schedule:
+    - cron: "0 4 * * *"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup development environment
+        uses: ./.github/actions/setup-dev-env
+
+      - name: Check available PyTorch distributions
+        id: pytorch-dists
+        run: |
+          PYTORCH_DISTS=$(python scripts/check_available_pytorch_dists.py)
+          echo "::set-output name=pytorch-dists::${PYTORCH_DISTS}"
+          if [[ -n "${PYTORCH_DISTS}" ]]; then { echo "${PYTORCH_DISTS}"; exit 1; }; fi
+
+      - uses: JasonEtco/create-an-issue@v2.6.0
+        if: failure() && github.event_name == 'schedule'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTORCH_DISTRIBUTIONS:
+            ${{ toJSON(steps.pytorch-dists.outputs.pytorch-dists) }}
+        with:
+          filename: .github/incorrect_pytorch_dists_issue_template.md

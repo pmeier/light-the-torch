@@ -1,4 +1,5 @@
 recursive-exclude .github *
+recursive-exclude scripts *
 recursive-exclude tests *
 
 exclude .coveragerc
