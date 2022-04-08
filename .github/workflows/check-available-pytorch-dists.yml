@@ -26,9 +26,7 @@ jobs:
         id: pytorch-dists
         run: |
           PYTORCH_DISTS=$(python scripts/check_available_pytorch_dists.py)
-          echo "script passed"
           echo "::set-output name=pytorch-dists::${PYTORCH_DISTS}"
-          echo "variable setting passed"
           if [[ -n "${PYTORCH_DISTS}" ]]; then { echo "${PYTORCH_DISTS}"; exit 1; }; fi
 
       - uses: JasonEtco/create-an-issue@v2.6.0
