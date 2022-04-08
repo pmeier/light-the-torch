@@ -36,7 +36,18 @@ class Channel(enum.Enum):
         return cls[string.upper()]
 
 
-PYTORCH_DISTRIBUTIONS = ("torch", "torchvision", "torchaudio", "torchtext")
+PYTORCH_DISTRIBUTIONS = {
+    "torch",
+    "torch_model_archiver",
+    "torch_tb_profiler",
+    "torcharrow",
+    "torchaudio",
+    "torchcsprng",
+    "torchdata",
+    "torchserve",
+    "torchtext",
+    "torchvision",
+}
 
 
 def patch(pip_main):
