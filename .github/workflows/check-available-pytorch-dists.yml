@@ -33,6 +33,7 @@ jobs:
         if: failure() && github.event_name == 'schedule'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PYTORCH_DISTRIBUTIONS: ${{ steps.pytorch-dists.outputs.pytorch-dists }}
+          PYTORCH_DISTRIBUTIONS:
+            ${{ fromJSON(steps.pytorch-dists.outputs.pytorch-dists) }}
         with:
           filename: .github/incorrect_pytorch_dists_issue_template.md

@@ -1,13 +1,20 @@
 import itertools
+import json
 
 import requests
 from bs4 import BeautifulSoup
 
 from light_the_torch._cb import _MINIMUM_DRIVER_VERSIONS, CPUBackend, CUDABackend
-
 from light_the_torch._patch import Channel, get_extra_index_urls, PYTORCH_DISTRIBUTIONS
 
-PATCHED_PYTORCH_DISTRIBUTIONS = set(PYTORCH_DISTRIBUTIONS)
+EXCLUDED_PYTORCH_DIST = {
+    "nestedtensor",
+    "pytorch_csprng",
+    "torch_cuda80",
+    "torch_nightly",
+    "torchaudio_nightly",
+}
+PATCHED_PYTORCH_DISTS = set(PYTORCH_DISTRIBUTIONS)
 
 COMPUTATION_BACKENDS = {
     CUDABackend(cuda_version.major, cuda_version.minor)
@@ -30,16 +37,13 @@ def main():
         soup = BeautifulSoup(response.text, features="html.parser")
 
         available.update(tag.string for tag in soup.find_all(name="a"))
+    available = available - EXCLUDED_PYTORCH_DIST
 
-    missing = available - PATCHED_PYTORCH_DISTRIBUTIONS
-    extra = PATCHED_PYTORCH_DISTRIBUTIONS - available
-    if not (missing or extra):
-        return
+    missing = available - PATCHED_PYTORCH_DISTS
+    extra = PATCHED_PYTORCH_DISTS - available
 
-    print("PYTORCH_DISTRIBUTIONS = {")
-    for dist in sorted(available):
-        print(f'    "{dist}",')
-    print("}")
+    if missing or extra:
+        print(json.dumps(sorted(available)))
 
 
 if __name__ == "__main__":
