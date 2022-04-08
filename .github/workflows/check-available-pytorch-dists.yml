@@ -26,7 +26,7 @@ jobs:
         id: pytorch-dists
         run: |
           PYTORCH_DISTS=$(python scripts/check_available_pytorch_dists.py)
-          echo "::set-output name=pytorch-dists::$PYTORCH_DISTS"
+          echo "::set-output name=pytorch-dists::${PYTORCH_DISTS}"
           [[ -n "${PYTORCH_DISTS}" ]] && {echo "${PYTORCH_DISTS}"; exit 1}
 
       - uses: JasonEtco/create-an-issue@v2.6.0
