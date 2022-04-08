@@ -24,16 +24,16 @@ jobs:
 
       - name: Check available PyTorch distributions
         id: pytorch-dists
+        #          echo "::set-output name=pytorch-dists::$PYTORCH_DISTS"
         run: |
           PYTORCH_DISTS=$(python scripts/check_available_pytorch_dists.py)
-          echo "::set-output name=pytorch-dists::$PYTORCH_DISTS"
           [[ -n "$PYTORCH_DISTRIBUTIONS" ]] && {echo "$PYTORCH_DISTS"; exit 1;}
 
-      - uses: JasonEtco/create-an-issue@v2.6.0
-        if: failure() && github.event_name == 'schedule'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PYTORCH_DISTRIBUTIONS:
-            ${{ fromJSON(steps.pytorch-dists.outputs.pytorch-dists) }}
-        with:
-          filename: .github/incorrect_pytorch_dists_issue_template.md
+#      - uses: JasonEtco/create-an-issue@v2.6.0
+#        if: failure() && github.event_name == 'schedule'
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          PYTORCH_DISTRIBUTIONS:
+#            ${{ fromJSON(steps.pytorch-dists.outputs.pytorch-dists) }}
+#        with:
+#          filename: .github/incorrect_pytorch_dists_issue_template.md
