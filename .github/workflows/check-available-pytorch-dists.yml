@@ -38,3 +38,4 @@ jobs:
             ${{ toJSON(steps.pytorch-dists.outputs.pytorch-dists) }}
         with:
           filename: .github/incorrect_pytorch_dists_issue_template.md
+          update_existing: true
