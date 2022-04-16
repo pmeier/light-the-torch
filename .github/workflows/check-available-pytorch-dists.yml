@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/check-available-pytorch-dists.yml"
+      - ".github/incorrect_pytorch_dists_issue_template.md"
       - "scripts/check_available_pytorch_dists.py"
 
   schedule:
