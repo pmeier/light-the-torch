@@ -8,6 +8,8 @@ the wheels hosted by PyTorch. Please replace it with
 
 ```py
 PYTORCH_DISTRIBUTIONS = {
-    {{ env.PYTORCH_DISTRIBUTIONS | list | join("\n") | indent(4, true) }}
+{%- for dist in env.PYTORCH_DISTRIBUTIONS %}
+    "{{ dist }}",
+{%- endfor %}
 }
 ```
