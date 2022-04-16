@@ -44,6 +44,7 @@ PYTORCH_DISTRIBUTIONS = {
     "torchaudio",
     "torchcsprng",
     "torchdata",
+    "torchdistx",
     "torchserve",
     "torchtext",
     "torchvision",
