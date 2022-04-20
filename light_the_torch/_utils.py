@@ -83,7 +83,7 @@ def apply_fn_patch(
     def new(*args, **kwargs):
         input = Input.from_call_args(fn, *args, **kwargs)
 
-        input = preprocessing(input)
+        preprocessing(input)
         with context(input):
             args, kwargs = input.to_call_args()
             output = fn(*args, **kwargs)

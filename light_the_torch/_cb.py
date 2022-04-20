@@ -50,6 +50,16 @@ class ComputationBackend(ABC):
                 minor = version[-1]
 
             return CUDABackend(int(major), int(minor))
+        elif string.startswith("rocm"):
+            match = re.match(r"^rocm(?P<version>[\d.]+)$", string)
+            if match is None:
+                raise parse_error
+
+            parts = match["version"].split(".")
+            if len(parts) not in {2, 3}:
+                raise parse_error
+
+            return ROCmBackend(*[int(part) for part in parts])
         else:
             raise parse_error
 
@@ -78,10 +88,46 @@ class CUDABackend(ComputationBackend):
     def __lt__(self, other: Any) -> bool:
         if isinstance(other, CPUBackend):
             return False
+        elif isinstance(other, ROCmBackend):
+            raise TypeError("Refusing to order a CUDA and a ROCm computation backend.")
         elif not isinstance(other, CUDABackend):
             return NotImplemented
 
         return (self.major, self.minor) < (other.major, other.minor)
+
+
+class ROCmBackend(ComputationBackend):
+    def __init__(self, major, minor, patch=None):
+        self.major = major
+        self.minor = minor
+        self.patch = patch
+
+    @property
+    def local_specifier(self) -> str:
+        parts = [self.major, self.minor]
+        if self.patch is not None:
+            parts.append(self.patch)
+        return f"rocm{'.'.join(str(part) for part in parts)}"
+
+    def __lt__(self, other: Any) -> bool:
+        if isinstance(other, CPUBackend):
+            return False
+        elif isinstance(other, CUDABackend):
+            raise TypeError("Refusing to order a ROCm and a CUDA computation backend.")
+        elif not isinstance(other, ROCmBackend):
+            return NotImplemented
+
+        if (self.major, self.minor) < (other.major, other.minor):
+            return True
+        elif (self.major, self.minor) > (other.major, other.minor):
+            return False
+
+        if self.patch is not None and other.patch is None:
+            return False
+        elif self.patch is None and other.patch is not None:
+            return True
+        else:
+            return self.patch < other.patch
 
 
 def _detect_nvidia_driver_version() -> Optional[Version]:

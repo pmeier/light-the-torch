@@ -15,7 +15,6 @@ import pip._internal.cli.cmdoptions
 import pip._internal.index.collector
 import pip._internal.index.package_finder
 from pip._internal.index.package_finder import CandidateEvaluator
-from pip._internal.models.candidate import InstallationCandidate
 from pip._internal.models.search_scope import SearchScope
 
 import light_the_torch as ltt
@@ -256,7 +255,7 @@ def patch_link_collection(computation_backends, channel):
 def patch_candidate_selection(computation_backends):
     allowed_locals = {None, *computation_backends}
     computation_backend_pattern = re.compile(
-        r"^/whl/(?P<computation_backend>(cpu|cu\d+))/"
+        r"^/whl/(?P<computation_backend>(cpu|cu\d+|rocm([\d.]+)))/"
     )
 
     def preprocessing(input):
@@ -264,26 +263,14 @@ def patch_candidate_selection(computation_backends):
             candidate
             for candidate in input.candidates
             if candidate.name not in PYTORCH_DISTRIBUTIONS
-            or candidate.version.local is None
-            or "rocm" not in candidate.version.local
-        ]
-        return input
-
-    def postprocessing(
-        input, output: List[InstallationCandidate]
-    ) -> List[InstallationCandidate]:
-        return [
-            candidate
-            for candidate in output
-            if candidate.name not in PYTORCH_DISTRIBUTIONS
             or candidate.version.local in allowed_locals
         ]
 
-    foo = CandidateEvaluator._sort_key
+    sort_key = CandidateEvaluator._sort_key
 
-    def sort_key(candidate_evaluator, candidate):
+    def patched_sort_key(candidate_evaluator, candidate):
         if candidate.name not in PYTORCH_DISTRIBUTIONS:
-            return foo(candidate_evaluator, candidate)
+            return sort_key(candidate_evaluator, candidate)
 
         if candidate.version.local is not None:
             computation_backend_str = candidate.version.local.replace("any", "cpu")
@@ -304,7 +291,8 @@ def patch_candidate_selection(computation_backends):
         "CandidateEvaluator",
         "get_applicable_candidates",
         preprocessing=preprocessing,
-        postprocessing=postprocessing,
     ):
-        with unittest.mock.patch.object(CandidateEvaluator, "_sort_key", new=sort_key):
+        with unittest.mock.patch.object(
+            CandidateEvaluator, "_sort_key", new=patched_sort_key
+        ):
             yield
