@@ -72,6 +72,23 @@ class TestComputationBackend:
         assert backend.major == major
         assert backend.minor == minor
 
+    @pytest.mark.parametrize(
+        ("major", "minor", "patch", "string"),
+        [
+            pytest.param(major, minor, patch, string, id=string)
+            for major, minor, patch, string in (
+                (4, 5, 2, "rocm4.5.2"),
+                (5, 0, None, "rocm5.0"),
+            )
+        ],
+    )
+    def test_from_str_rocm(self, major, minor, patch, string):
+        backend = cb.ComputationBackend.from_str(string)
+        assert isinstance(backend, cb.ROCmBackend)
+        assert backend.major == major
+        assert backend.minor == minor
+        assert backend.patch == patch
+
     @pytest.mark.parametrize("string", (("unknown", "cudnn")))
     def test_from_str_unknown(self, string):
         with pytest.raises(ValueError, match=string):
@@ -92,6 +109,17 @@ class TestCUDABackend:
         assert backend == f"cu{major}{minor}"
 
 
+class TestROCmBackend:
+    @pytest.mark.parametrize("patch", [10, None])
+    def test_eq_with_patch(self, patch):
+        major = 42
+        minor = 21
+        backend = cb.ROCmBackend(major, minor, patch)
+        assert (
+            backend == f"rocm{major}.{minor}{f'.{patch}' if patch is not None else ''}"
+        )
+
+
 class TestOrdering:
     def test_cpu(self):
         assert cb.CPUBackend() < cb.CUDABackend(0, 0)
@@ -100,6 +128,25 @@ class TestOrdering:
         assert cb.CUDABackend(0, 0) > cb.CPUBackend()
         assert cb.CUDABackend(1, 2) < cb.CUDABackend(2, 1)
         assert cb.CUDABackend(2, 1) < cb.CUDABackend(10, 0)
+
+    def test_rocm(self):
+        assert cb.ROCmBackend(0, 0, 0) > cb.CPUBackend()
+
+        assert cb.ROCmBackend(1, 2, 3) < cb.ROCmBackend(3, 2, 1)
+        assert cb.ROCmBackend(3, 2, 1) < cb.ROCmBackend(10, 9, 8)
+
+        assert cb.ROCmBackend(1, 2) < cb.ROCmBackend(1, 2, 0)
+        assert cb.ROCmBackend(1, 2, 0) > cb.ROCmBackend(1, 2)
+
+    def test_cuda_vs_rocm(self):
+        cuda_backend = cb.CUDABackend(1, 2)
+        rocm_backend = cb.ROCmBackend(1, 2)
+
+        with pytest.raises(TypeError):
+            cuda_backend < rocm_backend
+
+        with pytest.raises(TypeError):
+            rocm_backend < cuda_backend
 
 
 @pytest.fixture
