@@ -256,24 +256,22 @@ def patch_link_collection(computation_backends, channel):
 def patch_candidate_selection(computation_backends):
     allowed_locals = {None, *computation_backends}
     computation_backend_pattern = re.compile(
-        r"^/whl/(?P<computation_backend>(cpu|cu\d+))/"
+        r"^/whl/(?P<computation_backend>(cpu|cu\d+|rocm([\d.]+)))/"
     )
 
-    def postprocessing(
-        input, output: List[InstallationCandidate]
-    ) -> List[InstallationCandidate]:
-        return [
+    def preprocessing(input):
+        input.candidates = [
             candidate
-            for candidate in output
+            for candidate in input.candidates
             if candidate.name not in PYTORCH_DISTRIBUTIONS
             or candidate.version.local in allowed_locals
         ]
 
-    foo = CandidateEvaluator._sort_key
+    sort_key = CandidateEvaluator._sort_key
 
-    def sort_key(candidate_evaluator, candidate):
+    def patched_sort_key(candidate_evaluator, candidate):
         if candidate.name not in PYTORCH_DISTRIBUTIONS:
-            return foo(candidate_evaluator, candidate)
+            return sort_key(candidate_evaluator, candidate)
 
         if candidate.version.local is not None:
             computation_backend_str = candidate.version.local.replace("any", "cpu")
@@ -293,7 +291,9 @@ def patch_candidate_selection(computation_backends):
         "package_finder",
         "CandidateEvaluator",
         "get_applicable_candidates",
-        postprocessing=postprocessing,
+        preprocessing=preprocessing,
     ):
-        with unittest.mock.patch.object(CandidateEvaluator, "_sort_key", new=sort_key):
+        with unittest.mock.patch.object(
+            CandidateEvaluator, "_sort_key", new=patched_sort_key
+        ):
             yield
