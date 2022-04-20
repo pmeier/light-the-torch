@@ -15,7 +15,6 @@ import pip._internal.cli.cmdoptions
 import pip._internal.index.collector
 import pip._internal.index.package_finder
 from pip._internal.index.package_finder import CandidateEvaluator
-from pip._internal.models.candidate import InstallationCandidate
 from pip._internal.models.search_scope import SearchScope
 
 import light_the_torch as ltt
