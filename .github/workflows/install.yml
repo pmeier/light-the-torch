@@ -46,10 +46,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Collect environment information
+        run: python scripts/collect_env.py
+
       - name: Install torch
         run: ltt install --cpuonly --pytorch-channel=${{ matrix.pytorch-channel }} torch
 
       - name: Check if CPU only
-        run:
-          python -c "import sys, torch; sys.exit(hasattr(torch._C,
-          '_cuda_getDeviceCount'))"
+        shell: python
+        run: |
+          import sys
+          import torch
+
+          compiled_with_cuda = not hasattr(torch._C, "_cuda_getDeviceCount")
+          sys.exit(compiled_with_cuda)
