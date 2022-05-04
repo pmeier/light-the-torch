@@ -1,9 +1,8 @@
 import contextlib
 import dataclasses
-
 import enum
 import functools
-
+import itertools
 import optparse
 import re
 import sys
@@ -16,7 +15,6 @@ import pip._internal.index.collector
 import pip._internal.index.package_finder
 from pip._internal.index.package_finder import CandidateEvaluator
 from pip._internal.models.search_scope import SearchScope
-from pip._vendor.packaging.version import Version
 
 import light_the_torch as ltt
 
@@ -258,47 +256,50 @@ def patch_candidate_selection(computation_backends):
         r"/(?P<computation_backend>(cpu|cu\d+|rocm([\d.]+)))/"
     )
 
+    def extract_local_specifier(candidate):
+        local = candidate.version.local
+
+        if local is None:
+            match = computation_backend_pattern.search(candidate.link.path)
+            local = match["computation_backend"] if match else "any"
+
+        # Early PyTorch distributions used the "any" local specifier to indicate a
+        # pure Python binary. This was changed to no local specifier later.
+        # Setting this to "cpu" is technically not correct as it will exclude this
+        # binary if a non-CPU backend is requested. Still, this is probably the
+        # right thing to do, since the user requested a specific backend and
+        # although this binary will work with it, it was not compiled against it.
+        if local == "any":
+            local = "cpu"
+
+        return local
+
     def preprocessing(input):
-        candidates = []
-        for candidate in input.candidates:
-            if candidate.name not in PYTORCH_DISTRIBUTIONS:
-                # At this stage all candidates have the same name. Thus, if the first is
-                # not a PyTorch distribution, we don't need to check the rest and can
-                # return without changes.
-                return
+        candidates = iter(input.candidates)
+        candidate = next(candidates)
 
-            if candidate.version.local is None:
-                match = computation_backend_pattern.search(candidate.link.path)
-                if match:
-                    local = match["computation_backend"]
-                else:
-                    local = "any"
-                candidate.version = Version(f"{candidate.version.base_version}+{local}")
+        if candidate.name not in PYTORCH_DISTRIBUTIONS:
+            # At this stage all candidates have the same name. Thus, if the first is
+            # not a PyTorch distribution, we don't need to check the rest and can
+            # return without changes.
+            return
 
-            # Early PyTorch distributions used the "any" local specifier to indicate a
-            # pure Python binary. This was changed to no local specifier later.
-            # Setting this to "cpu" is technically not correct as it will exclude this
-            # binary if a non-CPU backend is requested. Still, this is probably the
-            # right thing to do, since the user requested a specific backend and
-            # although this binary ill work with it, it was not compiled against it.
-            if candidate.version.local == "any":
-                candidate.version = Version(f"{candidate.version.base_version}+cpu")
+        input.candidates = [
+            candidate
+            for candidate in itertools.chain([candidate], candidates)
+            if extract_local_specifier(candidate) in computation_backends
+        ]
 
-            if candidate.version.local not in computation_backends:
-                continue
-
-            candidates.append(candidate)
-
-        input.candidates = candidates
-
-    sort_key = CandidateEvaluator._sort_key
+    vanilla_sort_key = CandidateEvaluator._sort_key
 
     def patched_sort_key(candidate_evaluator, candidate):
+        # At this stage all candidates have the same name. Thus, we don't need to
+        # mirror the exact key structure that the vanilla sort keys have.
         return (
-            sort_key(candidate_evaluator, candidate)
+            vanilla_sort_key(candidate_evaluator, candidate)
             if candidate.name not in PYTORCH_DISTRIBUTIONS
             else (
-                cb.ComputationBackend.from_str(candidate.version.local),
+                cb.ComputationBackend.from_str(extract_local_specifier(candidate)),
                 candidate.version.base_version,
             )
         )
