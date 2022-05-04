@@ -58,5 +58,5 @@ jobs:
           import sys
           import torch
 
-          compiled_with_cuda = not hasattr(torch._C, "_cuda_getDeviceCount")
+          compiled_with_cuda = hasattr(torch._C, "_cuda_getDeviceCount")
           sys.exit(compiled_with_cuda)
