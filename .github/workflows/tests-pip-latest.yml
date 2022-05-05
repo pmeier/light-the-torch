@@ -1,0 +1,72 @@
+name: tests-pip-latest
+
+on:
+  push:
+    branches:
+      - main
+      - releases/*
+
+  pull_request:
+    paths:
+      - ".github/workflows/tests-pip-latest.yml"
+
+  schedule:
+    - cron: "0 4 * * *"
+
+jobs:
+  unit:
+    strategy:
+      matrix:
+        release:
+          - stable
+          - pre-release
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup development environment
+        uses: ./.github/actions/setup-dev-env
+
+      - name: Extract current pip version
+        id: current
+        run: |
+          VESION=`pip show pip | grep Version | sed 's/Version: \(.*\)/\1/'`
+          echo "${VERSION}"
+          echo "::set-output name=version::${VERSION}"
+
+      - name: Upgrade pip and extract version
+        id: latest
+        env:
+          RELEASE: ${{ matrix.release }}
+        run: |
+          PRE=`[[ $RELEASE == 'pre-release' ]] && echo '--pre'`
+          python -m pip install --upgrade $PRE pip
+
+          VESION=`pip show pip | grep Version | sed 's/Version: \(.*\)/\1/'`
+          echo "::set-output name=version::${VERSION}"
+
+      - name: Run unit test
+        if: steps.current.outputs.version != steps.latest.outputs.version
+        run: doit test
+#      - uses: JasonEtco/create-an-issue@v2.6.0
+#        if: failure() && github.event_name == 'schedule'
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          LATEST_VERSION: ${{ steps.latest.outputs.version }}
+#        with:
+#          filename: .github/pip_latest_failure_issue_template.md
+#          update_existing: false
+#
+#      - uses: JasonEtco/create-an-issue@v2.6.0
+#        if: failure() && github.event_name == 'schedule'
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          LATEST_VERSION: ${{ steps.latest.outputs.version }}
+#        with:
+#          filename: .github/pip_latest_failure_issue_template.md
+#          update_existing: true
