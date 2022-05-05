@@ -1,11 +1,6 @@
 name: tests-pip-latest
 
 on:
-  push:
-    branches:
-      - main
-      - releases/*
-
   pull_request:
     paths:
       - ".github/workflows/tests-pip-latest.yml"
@@ -54,20 +49,21 @@ jobs:
       - name: Run unit test
         if: steps.current.outputs.version != steps.latest.outputs.version
         run: doit test
-#      - uses: JasonEtco/create-an-issue@v2.6.0
-#        if: failure() && github.event_name == 'schedule'
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          LATEST_VERSION: ${{ steps.latest.outputs.version }}
-#        with:
-#          filename: .github/pip_latest_failure_issue_template.md
-#          update_existing: false
-#
-#      - uses: JasonEtco/create-an-issue@v2.6.0
-#        if: failure() && github.event_name == 'schedule'
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          LATEST_VERSION: ${{ steps.latest.outputs.version }}
-#        with:
-#          filename: .github/pip_latest_failure_issue_template.md
-#          update_existing: true
+
+      - uses: JasonEtco/create-an-issue@v2.6.0
+        if: github.event_name == 'schedule' && failure()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.latest.outputs.version }}
+        with:
+          filename: .github/pip_latest_failure_issue_template.md
+          update_existing: false
+
+      - uses: JasonEtco/create-an-issue@v2.6.0
+        if: github.event_name == 'schedule' && success() && matrix.release == 'stable'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.latest.outputs.version }}
+        with:
+          filename: .github/pip_latest_success_issue_template.md
+          update_existing: false
