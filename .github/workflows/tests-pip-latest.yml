@@ -20,6 +20,7 @@ jobs:
         release:
           - stable
           - pre-release
+      fail-fast: false
 
     runs-on: ubuntu-latest
 
@@ -35,7 +36,7 @@ jobs:
       - name: Extract current pip version
         id: current
         run: |
-          VESION=`pip show pip | grep Version | sed 's/Version: \(.*\)/\1/'`
+          VERSION=`pip show pip | grep Version | sed 's/Version: \(.*\)/\1/'`
           echo "${VERSION}"
           echo "::set-output name=version::${VERSION}"
 
@@ -44,7 +45,7 @@ jobs:
         env:
           RELEASE: ${{ matrix.release }}
         run: |
-          PRE=`[[ $RELEASE == 'pre-release' ]] && echo '--pre'`
+          PRE=`if [[ $RELEASE == 'pre-release' ]]; then echo '--pre'; fi`
           python -m pip install --upgrade $PRE pip
 
           VESION=`pip show pip | grep Version | sed 's/Version: \(.*\)/\1/'`
