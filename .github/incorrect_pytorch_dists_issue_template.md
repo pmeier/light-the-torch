@@ -8,7 +8,7 @@ the wheels hosted by PyTorch. Please replace it with
 
 ```py
 PYTORCH_DISTRIBUTIONS = {
-{%- for dist in env.PYTORCH_DISTRIBUTIONS %}
+{%- for dist in env.PYTORCH_DISTRIBUTIONS.split(",") %}
     "{{ dist }}",
 {%- endfor %}
 }

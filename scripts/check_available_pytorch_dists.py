@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import itertools
-import json
 
 import requests
 from bs4 import BeautifulSoup
@@ -48,7 +47,7 @@ def main():
     extra = PATCHED_PYTORCH_DISTS - available
 
     if missing or extra:
-        print(json.dumps(sorted(available)))
+        print(",".join(sorted(available)))
 
 
 if __name__ == "__main__":
