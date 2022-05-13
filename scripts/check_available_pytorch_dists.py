@@ -14,6 +14,10 @@ EXCLUDED_PYTORCH_DIST = {
     "torch_cuda80",
     "torch_nightly",
     "torchaudio_nightly",
+    "torchrec_nightly",
+    "torchrec_nightly_3.7_cu11.whl",
+    "torchrec_nightly_3.8_cu11.whl",
+    "torchrec_nightly_3.9_cu11.whl",
 }
 PATCHED_PYTORCH_DISTS = set(PYTORCH_DISTRIBUTIONS)
 
