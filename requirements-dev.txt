@@ -13,3 +13,4 @@ check-wheel-contents
 # misc
 requests
 beautifulsoup4
+jinja2

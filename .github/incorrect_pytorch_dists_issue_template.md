@@ -7,9 +7,5 @@ The variable `light_the_torch._patch.PYTORCH_DISTRIBUTIONS` is no longer aligned
 the wheels hosted by PyTorch. Please replace it with
 
 ```py
-PYTORCH_DISTRIBUTIONS = {
-{%- for dist in env.PYTORCH_DISTRIBUTIONS %}
-    "{{ dist }}",
-{%- endfor %}
-}
+{{ env.PYTORCH_DISTRIBUTIONS }}
 ```
