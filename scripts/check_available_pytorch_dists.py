@@ -52,10 +52,7 @@ def main():
     extra = PATCHED_PYTORCH_DISTS - available
 
     if missing or extra:
-        print("PYTORCH_DISTRIBUTIONS = {")
-        for dist in sorted(available):
-            print(f'    "{dist}",')
-        print("}")
+        print(",".join(sorted(available)))
 
 
 if __name__ == "__main__":
