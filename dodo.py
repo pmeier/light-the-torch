@@ -35,11 +35,21 @@ def task_install():
     yield dict(
         name="dev",
         file_dep=[HERE / "requirements-dev.txt"],
-        actions=[do("python -m pip install --upgrade -r requirements-dev.txt")],
+        actions=[
+            do(
+                "python -m pip install --upgrade --upgrade-strategy=eager",
+                "-r requirements-dev.txt",
+            )
+        ],
     )
     yield dict(
         name="project",
-        actions=[do("python -m pip install -e .")],
+        actions=[
+            do(
+                "python -m pip install --upgrade --upgrade-strategy=eager",
+                "-e .",
+            )
+        ],
     )
 
 
