@@ -41,29 +41,36 @@ jobs:
           RELEASE: ${{ matrix.release }}
         run: |
           PRE=`if [[ $RELEASE == 'pre-release' ]]; then echo '--pre'; fi`
-          python -m pip install -qqq --upgrade $PRE pip
+          python -m pip install --progress-bar=off --upgrade $PRE pip
 
           VERSION=`pip show pip | grep Version | sed 's/Version: \(.*\)/\1/'`
           echo "${VERSION}"
           echo "::set-output name=version::${VERSION}"
 
       - name: Run unit test
+        id: tests
         if: steps.current.outputs.version != steps.latest.outputs.version
         run: doit test
 
       - uses: JasonEtco/create-an-issue@v2.6.0
-        if: github.event_name == 'schedule' && failure()
+        if: github.event_name == 'schedule' && steps.tests.outcome == 'failure'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ID: ${{ github.run_id }}
           VERSION: ${{ steps.latest.outputs.version }}
         with:
           filename: .github/pip_latest_failure_issue_template.md
           update_existing: false
 
       - uses: JasonEtco/create-an-issue@v2.6.0
-        if: github.event_name == 'schedule' && success() && matrix.release == 'stable'
+        if:
+          github.event_name == 'schedule' && steps.tests.outcome == 'success' &&
+          matrix.release == 'stable'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ID: ${{ github.run_id }}
           VERSION: ${{ steps.latest.outputs.version }}
         with:
           filename: .github/pip_latest_success_issue_template.md
