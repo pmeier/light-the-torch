@@ -35,8 +35,8 @@ index, has some limitations:
    was compiled with, you can't use any of the GPU features.
 
 To overcome this, PyTorch also hosts _all_ binaries
-[themselves](https://download.pytorch.org/whl/torch_stable.html). To access them, you
-can still use `pip install` them, but some
+[themselves](https://download.pytorch.org/whl). To access them, you can still use
+`pip install` them, but some
 [additional options](https://pytorch.org/get-started/locally/) are needed:
 
 ```shell
@@ -49,12 +49,18 @@ While this is certainly an improvement, it still has a few downsides:
    your local machine. This can be quite challenging for new users and at least tedious
    for more experienced ones.
 2. Besides the stable binaries, PyTorch also offers nightly, test, and long-time support
-   (LTS) ones. To install them, you need a different `--extra-index-url` for each. For
-   the nightly and test channel you also need to supply the `--pre` option.
-3. If you want to install any package hosted on PyPI that depends on PyTorch, you always
-   also need to specify all needed PyTorch distributions in the `pip install` command.
-   Otherwise, the `--extra-index-url` flag is ignored and the PyTorch distributions
-   hosted on PyPI will be installed.
+   (LTS) ones. To install them, you need a different `--extra-index-url` for each.
+3. For the nightly and test channel you also need to supply the `--pre` option. Failing
+   to do so, will pull the stable binary from PyPI even if the rest of the installation
+   command is correct.
+4. When installing from the LTS channel, you need to pin the exact version, since `pip`
+   prefers newer releases from PyPI. Thus, it is not possible to automatically get the
+   latest LTS release.
+
+In case you only want to install PyTorch distributions, point 3. and 4. above can be
+resolved by using `--index-url` instead and completely disabling installing from PyPI.
+But of course this means it is not possible to install any package not hosted by
+PyTorch, but that depends on it.
 
 If any of these points don't sound appealing to you, and you just want to have the same
 user experience as `pip install` for PyTorch distributions, `light-the-torch` was made
@@ -65,7 +71,7 @@ for you.
 Installing `light-the-torch` is as easy as
 
 ```shell
-pip install --pre light-the-torch
+pip install light-the-torch
 ```
 
 Since it depends on `pip` and it might be upgraded during installation,
@@ -73,7 +79,7 @@ Since it depends on `pip` and it might be upgraded during installation,
 install it with
 
 ```shell
-py -m pip install --pre light-the-torch
+py -m pip install light-the-torch
 ```
 
 ## How do I use it?
