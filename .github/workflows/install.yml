@@ -92,8 +92,9 @@ jobs:
         include:
           - os: ubuntu-latest
             pytorch-computation-backend: cu102
-          - os: ubuntu-latest
-            pytorch-computation-backend: rocm5.1.1
+      # TODO: find a way to test this
+      #          - os: ubuntu-latest
+      #            pytorch-computation-backend: rocm5.1.1
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
