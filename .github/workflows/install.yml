@@ -9,7 +9,7 @@ on:
   pull_request:
 
 jobs:
-  torch_cpu:
+  channel:
     strategy:
       matrix:
         os:
@@ -60,5 +60,77 @@ jobs:
           import sys
           import torch
 
-          compiled_with_cuda = hasattr(torch._C, "_cuda_getDeviceCount")
-          sys.exit(compiled_with_cuda)
+          cuda = torch.version.cuda
+          hip = torch.version.hip
+
+          sys.exit(cuda or hip)
+
+  computation-backend:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+        python-version:
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.10"
+        pytorch-computation-backend:
+          - cpu
+          - cu102
+          - cu113
+          - cu116
+        exclude:
+          - os: macos-latest
+            pytorch-computation-backend:
+              - cu102
+              - cu113
+              - cu116
+        include:
+          - os: macos-latest
+            pytorch-computation-backend:
+              - rocm5.1.1
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup development environment
+        uses: ./.github/actions/setup-dev-env
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Collect environment information
+        run: python scripts/collect_env.py
+
+      - name: Install torch
+        run:
+          ltt install --pytorch-computation-backend=${{
+          matrix.pytorch-computation-backend }} torch==1.12.1
+
+      - name: Check if CPU only
+        shell: python
+        run: |
+          import sys
+          import torch
+          from light_the_torch._cb import ComputationBackend, CUDABackend, ROCmBackend, CPUBackend
+
+          expected = ComputationBackend.from_str("${{ matrix.pytorch-computation-backend }}")
+
+
+          if torch.version.cuda:
+              actual = CUDABackend.from_str(f"cu{torch.version.cuda}")
+          elif torch.version.hip:
+              rocm = ".".join(torch.version.hip.split(".")[:2])
+              actual = ROCmBackend.from_str(f"rocm{rocm}")
+          else:
+              actual = CPUBackend()
+
+          sys.exit(actual != expected)
