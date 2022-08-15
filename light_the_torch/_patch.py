@@ -278,6 +278,9 @@ def patch_candidate_selection(computation_backends):
         return local
 
     def preprocessing(input):
+        if not input.candidates:
+            return
+
         candidates = iter(input.candidates)
         candidate = next(candidates)
 
