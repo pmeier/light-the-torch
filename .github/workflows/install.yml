@@ -50,7 +50,9 @@ jobs:
         run: python scripts/collect_env.py
 
       - name: Install torch
-        run: ltt install --cpuonly --pytorch-channel=${{ matrix.pytorch-channel }} torch
+        run:
+          ltt install --cpuonly --pytorch-channel=${{ matrix.pytorch-channel }} torch
+          torchvision torchaudio
 
       - name: Check if CPU only
         shell: python
