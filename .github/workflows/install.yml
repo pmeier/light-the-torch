@@ -49,7 +49,7 @@ jobs:
       - name: Collect environment information
         run: python scripts/collect_env.py
 
-      - name: Install torch
+      - name: Install PyTorch distributions
         run:
           ltt install --pytorch-channel=${{ matrix.pytorch-channel }} torch torchvision
           torchaudio
@@ -61,7 +61,10 @@ jobs:
           import torch
 
           cuda = torch.version.cuda
+          print(f"cuda = {cuda}")
+
           hip = torch.version.hip
+          print(f"hip = {hip}")
 
           sys.exit(cuda or hip)
 
@@ -84,14 +87,14 @@ jobs:
           - cu116
         exclude:
           - os: macos-latest
-            pytorch-computation-backend:
-              - cu102
-              - cu113
-              - cu116
-        include:
+            pytorch-computation-backend: cu102
           - os: macos-latest
-            pytorch-computation-backend:
-              - rocm5.1.1
+            pytorch-computation-backend: cu113
+          - os: macos-latest
+            pytorch-computation-backend: cu116
+        include:
+          - os: ubuntu-latest
+            pytorch-computation-backend: rocm5.1.1
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -115,7 +118,7 @@ jobs:
           ltt install --pytorch-computation-backend=${{
           matrix.pytorch-computation-backend }} torch==1.12.1
 
-      - name: Check if CPU only
+      - name: Check computation backend
         shell: python
         run: |
           import sys
@@ -124,10 +127,15 @@ jobs:
 
           expected = ComputationBackend.from_str("${{ matrix.pytorch-computation-backend }}")
 
+          cuda = torch.version.cuda
+          print(f"cuda = {cuda}")
 
-          if torch.version.cuda:
+          hip = torch.version.hip
+          print(f"hip = {hip}")
+
+          if cuda:
               actual = CUDABackend.from_str(f"cu{torch.version.cuda}")
-          elif torch.version.hip:
+          elif hip:
               rocm = ".".join(torch.version.hip.split(".")[:2])
               actual = ROCmBackend.from_str(f"rocm{rocm}")
           else:
