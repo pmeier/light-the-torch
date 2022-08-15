@@ -14,8 +14,8 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - windows-latest
-          - macos-latest
+        #          - windows-latest
+        #          - macos-latest
         python-version:
           - "3.7"
           - "3.8"
@@ -51,8 +51,8 @@ jobs:
 
       - name: Install torch
         run:
-          ltt install --cpuonly --pytorch-channel=${{ matrix.pytorch-channel }} torch
-          torchvision torchaudio
+          ltt install --pytorch-computation-backend=cu116 --pytorch-channel=${{
+          matrix.pytorch-channel }} torch torchvision torchaudio
 
       - name: Check if CPU only
         shell: python
