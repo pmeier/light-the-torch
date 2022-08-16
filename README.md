@@ -35,14 +35,10 @@ index, has some limitations:
    was compiled with, you can't use any of the GPU features.
 
 To overcome this, PyTorch also hosts _most_ binaries
-[themselves](https://download.pytorch.org/whl)[^1].
-
-[^1]:
-    Some stable binaries of pure Python packages are only hosted on PyPI. This is
-    sufficient, since they are not compiled against any computation backend and thus
-    work in any environment.
-
-To access them, you can still use `pip install` them, but some
+[on their own package indices](https://download.pytorch.org/whl). Some distributions are
+not compiled against a specific computation backend and thus hosting them on PyPI is
+sufficient since they work in every environment. To access PyTorch's package indices,
+you can still use `pip install`, but some
 [additional options](https://pytorch.org/get-started/locally/) are needed:
 
 ```shell
