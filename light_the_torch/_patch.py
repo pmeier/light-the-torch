@@ -87,10 +87,11 @@ class LttOptions:
         return [
             optparse.Option(
                 "--pytorch-computation-backend",
-                # TODO: describe multiple inputs
                 help=(
                     "Computation backend for compiled PyTorch distributions, "
                     "e.g. 'cu102', 'cu115', or 'cpu'. "
+                    "Multiple computation backends can be passed as a comma-separated "
+                    "list, e.g 'cu102,cu113,cu116'. "
                     "If not specified, the computation backend is detected from the "
                     "available hardware, preferring CUDA over CPU."
                 ),
@@ -110,8 +111,12 @@ class LttOptions:
     def channel_parser_option() -> optparse.Option:
         return optparse.Option(
             "--pytorch-channel",
-            # FIXME add help text
-            help="",
+            help=(
+                "Channel to download PyTorch distributions from, e.g. 'stable' , "
+                "'test', 'nightly' and 'lts'. "
+                "If not specified, defaults to 'stable' unless '--pre' is given in "
+                "which case it defaults to 'test'."
+            ),
         )
 
     @staticmethod
@@ -135,7 +140,7 @@ class LttOptions:
 
         if opts.pytorch_computation_backend is not None:
             cbs = {
-                cb.ComputationBackend.from_str(string)
+                cb.ComputationBackend.from_str(string.strip())
                 for string in opts.pytorch_computation_backend.split(",")
             }
         elif opts.cpuonly:
