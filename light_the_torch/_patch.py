@@ -11,9 +11,10 @@ from typing import List, Set
 from unittest import mock
 
 import pip._internal.cli.cmdoptions
-import pip._internal.index.collector
-import pip._internal.index.package_finder
+
+from pip._internal.index.collector import CollectedSources
 from pip._internal.index.package_finder import CandidateEvaluator
+from pip._internal.index.sources import build_source
 from pip._internal.models.search_scope import SearchScope
 
 import light_the_torch as ltt
@@ -228,7 +229,7 @@ def get_extra_index_urls(computation_backends, channel):
 
 @contextlib.contextmanager
 def patch_link_collection(computation_backends, channel):
-    search_scope = SearchScope.create(
+    search_scope = SearchScope(
         find_links=[], index_urls=get_extra_index_urls(computation_backends, channel)
     )
 
@@ -241,6 +242,39 @@ def patch_link_collection(computation_backends, channel):
         with mock.patch.object(input.self, "search_scope", search_scope):
             yield
 
+    def postprocessing(input, output):
+        if input.project_name not in PYTORCH_DISTRIBUTIONS:
+            return output
+
+        if channel != Channel.STABLE:
+            return output
+
+        # Some stable binaries are not hosted on the PyTorch indices. We check if this
+        # is the case for the current distribution.
+        for remote_file_source in output.index_urls:
+            candidates = list(remote_file_source.page_candidates())
+
+            # Cache the candidates, so `pip` doesn't has to retrieve them again later.
+            remote_file_source.page_candidates = lambda: iter(candidates)
+
+            # If there are any candidates on the PyTorch indices, we continue normally.
+            if candidates:
+                return output
+
+        # In case the distribution is not present on the PyTorch indices, we fall back
+        # to PyPI.
+        _, pypi_file_source = build_source(
+            SearchScope(
+                find_links=[], index_urls=["https://pypi.org/simple"]
+            ).get_index_urls_locations(input.project_name)[0],
+            candidates_from_page=input.candidates_from_page,
+            page_validator=input.self.session.is_secure_origin,
+            expand_dir=False,
+            cache_link_parsing=False,
+        )
+
+        return CollectedSources(find_links=[], index_urls=[pypi_file_source])
+
     with apply_fn_patch(
         "pip",
         "_internal",
@@ -249,6 +283,7 @@ def patch_link_collection(computation_backends, channel):
         "LinkCollector",
         "collect_sources",
         context=context,
+        postprocessing=postprocessing,
     ):
         yield
 

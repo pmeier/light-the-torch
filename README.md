@@ -34,9 +34,11 @@ index, has some limitations:
    hand your NVIDIA driver version simply doesn't support the CUDA version the binary
    was compiled with, you can't use any of the GPU features.
 
-To overcome this, PyTorch also hosts _all_ binaries
-[themselves](https://download.pytorch.org/whl). To access them, you can still use
-`pip install` them, but some
+To overcome this, PyTorch also hosts _most_ binaries
+[on their own package indices](https://download.pytorch.org/whl). Some distributions are
+not compiled against a specific computation backend and thus hosting them on PyPI is
+sufficient since they work in every environment. To access PyTorch's package indices,
+you can still use `pip install`, but some
 [additional options](https://pytorch.org/get-started/locally/) are needed:
 
 ```shell
