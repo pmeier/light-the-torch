@@ -8,6 +8,7 @@ import light_the_torch as ltt
 import pytest
 
 from light_the_torch._cli import main
+from light_the_torch._patch import Channel
 
 
 @pytest.mark.parametrize("cmd", ["ltt", "python -m light_the_torch"])
@@ -112,4 +113,11 @@ def test_ltt_options_smoke(set_argv, option):
     set_argv("install", "--help")
 
     with exits(check_out=option):
+        main()
+
+
+def test_pytorch_channel_values(set_argv):
+    set_argv("install", "--help")
+
+    with exits(check_out=[f"'{channel.name.lower()}'" for channel in Channel]):
         main()
