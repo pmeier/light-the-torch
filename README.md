@@ -103,6 +103,13 @@ In fact, `ltt` is `pip` with a few added options:
   ltt install --pytorch-computation-backend=cu102 torch
   ```
 
+  Borrowing from the mutex packages that PyTorch provides for `conda` installations,
+  `--cpuonly` is available as shorthand for `--pytorch-computation-backend=cu102`.
+
+  In addition, the computation backend to be installed can also be set through the
+  `LTT_PYTORCH_COMPUTATION_BACKEND` environment variable. It will only be honored in
+  case no CLI option for the computation backend is specified.
+
 - By default, `ltt` installs stable PyTorch binaries. To install binaries from the
   nightly, test, or LTS channels pass the `--pytorch-channel` option:
 
