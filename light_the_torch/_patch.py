@@ -4,6 +4,7 @@ import enum
 import functools
 import itertools
 import optparse
+import os
 import re
 import sys
 import unittest.mock
@@ -145,6 +146,11 @@ class LttOptions:
             }
         elif opts.cpuonly:
             cbs = {cb.CPUBackend()}
+        elif "LTT_PYTORCH_COMPUTATION_BACKEND" in os.environ:
+            cbs = {
+                cb.ComputationBackend.from_str(string.strip())
+                for string in os.environ["LTT_PYTORCH_COMPUTATION_BACKEND"].split(",")
+            }
         else:
             cbs = cb.detect_compatible_computation_backends()
 
