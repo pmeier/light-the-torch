@@ -235,7 +235,9 @@ def get_extra_index_urls(computation_backends, channel):
 @contextlib.contextmanager
 def patch_link_collection(computation_backends, channel):
     search_scope = SearchScope(
-        find_links=[], index_urls=get_extra_index_urls(computation_backends, channel)
+        find_links=[],
+        index_urls=get_extra_index_urls(computation_backends, channel),
+        no_index=False,
     )
 
     @contextlib.contextmanager
@@ -270,7 +272,9 @@ def patch_link_collection(computation_backends, channel):
         # to PyPI.
         _, pypi_file_source = build_source(
             SearchScope(
-                find_links=[], index_urls=["https://pypi.org/simple"]
+                find_links=[],
+                index_urls=["https://pypi.org/simple"],
+                no_index=False,
             ).get_index_urls_locations(input.project_name)[0],
             candidates_from_page=input.candidates_from_page,
             page_validator=input.self.session.is_secure_origin,
