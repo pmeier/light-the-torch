@@ -22,6 +22,7 @@ EXCLUDED_PYTORCH_DIST = {
     "torchrec_nightly_3.8_cu11.whl",
     "torchrec_nightly_3.9_cu11.whl",
     "torchrec_nightly_cpu",
+    "torchtriton",
 }
 PATCHED_PYTORCH_DISTS = set(PYTORCH_DISTRIBUTIONS)
 
