@@ -11,6 +11,7 @@ from light_the_torch._patch import Channel, get_extra_index_urls, PYTORCH_DISTRI
 EXCLUDED_PYTORCH_DIST = {
     "nestedtensor",
     "pytorch_csprng",
+    "pytorch_triton",
     "torch_cuda80",
     "torch_nightly",
     "torchaudio_nightly",
@@ -21,6 +22,7 @@ EXCLUDED_PYTORCH_DIST = {
     "torchrec_nightly_3.8_cu11.whl",
     "torchrec_nightly_3.9_cu11.whl",
     "torchrec_nightly_cpu",
+    "torchtriton",
 }
 PATCHED_PYTORCH_DISTS = set(PYTORCH_DISTRIBUTIONS)
 
