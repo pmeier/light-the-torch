@@ -5,9 +5,10 @@
 [![Code coverage via codecov.io](https://codecov.io/gh/pmeier/light-the-torch/branch/main/graph/badge.svg)](https://codecov.io/gh/pmeier/light-the-torch)
 
 `light-the-torch` is a small utility that wraps `pip` to ease the installation process
-for PyTorch distributions and third-party packages that depend on them. It auto-detects
-compatible CUDA versions from the local setup and installs the correct PyTorch binaries
-without user interference.
+for PyTorch distributions like `torch`, `torchvision`, `torchaudio`, and so on as well
+as third-party packages that depend on them. It auto-detects compatible CUDA versions
+from the local setup and installs the correct PyTorch binaries without user
+interference.
 
 - [Why do I need it?](#why-do-i-need-it)
 - [How do I install it?](#how-do-i-install-it)
@@ -17,8 +18,8 @@ without user interference.
 
 ## Why do I need it?
 
-PyTorch distributions are fully `pip install`'able, but PyPI, the default `pip` search
-index, has some limitations:
+PyTorch distributions like `torch`, `torchvision`, `torchaudio`, and so on are fully
+`pip install`'able, but PyPI, the default `pip` search index, has some limitations:
 
 1. PyPI regularly only allows binaries up to a size of
    [approximately 60 MB](https://github.com/pypa/packaging-problems/issues/86). One can
@@ -34,16 +35,18 @@ index, has some limitations:
    hand your NVIDIA driver version simply doesn't support the CUDA version the binary
    was compiled with, you can't use any of the GPU features.
 
-To overcome this, PyTorch also hosts _most_ binaries
-[on their own package indices](https://download.pytorch.org/whl). Some distributions are
-not compiled against a specific computation backend and thus hosting them on PyPI is
-sufficient since they work in every environment. To access PyTorch's package indices,
-you can still use `pip install`, but some
+To overcome this, PyTorch also hosts _most_[^1] binaries
+[on their own package indices](https://download.pytorch.org/whl). To access PyTorch's
+package indices, you can still use `pip install`, but some
 [additional options](https://pytorch.org/get-started/locally/) are needed:
 
 ```shell
 pip install torch --extra-index-url https://download.pytorch.org/whl/cu113
 ```
+
+[^1]:
+    Some distributions are not compiled against a specific computation backend and thus
+    hosting them on PyPI is sufficient since they work in every environment.
 
 While this is certainly an improvement, it still has a few downsides:
 
@@ -100,14 +103,14 @@ In fact, `ltt` is `pip` with a few added options:
   the computation backend you want to use:
 
   ```shell
-  ltt install --pytorch-computation-backend=cu102 torch
+  ltt install --pytorch-computation-backend=cu102 torch torchvision torchaudio
   ```
 
 - By default, `ltt` installs stable PyTorch binaries. To install binaries from the
   nightly, test, or LTS channels pass the `--pytorch-channel` option:
 
   ```shell
-  ltt install --pytorch-channel=nightly torch
+  ltt install --pytorch-channel=nightly torch torchvision torchaudio
   ```
 
   If `--pytorch-channel` is not passed, using `pip`'s builtin `--pre` option will
