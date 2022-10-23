@@ -33,7 +33,7 @@ jobs:
         run: |
           VERSION=`pip show pip | grep Version | sed 's/Version: \(.*\)/\1/'`
           echo "${VERSION}"
-          echo "::set-output name=version::${VERSION}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Upgrade pip and extract version
         id: latest
@@ -45,7 +45,7 @@ jobs:
 
           VERSION=`pip show pip | grep Version | sed 's/Version: \(.*\)/\1/'`
           echo "${VERSION}"
-          echo "::set-output name=version::${VERSION}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Run unit test
         id: tests

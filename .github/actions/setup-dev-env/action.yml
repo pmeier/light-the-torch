@@ -20,7 +20,7 @@ runs:
       run: |
         pip install appdirs
         CACHE_PATH=`python -c "import appdirs; print(appdirs.user_cache_dir('pip', appauthor=False))"`
-        echo "::set-output name=path::$CACHE_PATH"
+        echo "path=${CACHE_PATH}" >> $GITHUB_OUTPUT
 
     - name: Restore pip cache
       uses: actions/cache@v2
