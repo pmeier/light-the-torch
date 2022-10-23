@@ -65,14 +65,10 @@ jobs:
           filename: .github/pip_latest_failure_issue_template.md
           update_existing: false
 
-      - name: test failure
+      - uses: JasonEtco/create-an-issue@v2.6.0
         if:
           failure() && github.event_name == 'schedule' && steps.tests.outcome ==
-          'failure'
-        run: echo "failure with latest pip"
-
-      - uses: JasonEtco/create-an-issue@v2.6.0
-        if: failure() && steps.tests.outcome == 'success' && matrix.release == 'stable'
+          'success' && matrix.release == 'stable'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
@@ -81,7 +77,3 @@ jobs:
         with:
           filename: .github/pip_latest_success_issue_template.md
           update_existing: false
-
-      - name: test failure
-        if: failure() && steps.tests.outcome == 'failure'
-        run: echo "success with latest pip"
