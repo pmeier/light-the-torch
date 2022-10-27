@@ -36,6 +36,9 @@ class PatchedPackages:
             name: cls(options) for name, cls in self._PATCHED_PACKAGE_CLSS_MAP.items()
         }
 
+    def __contains__(self, name):
+        return name in self._patched_packages_map
+
     def get(self, name):
         return self._patched_packages_map.get(name)
 
@@ -123,7 +126,19 @@ class _PatchedPyTorchPackage(_PatchedPackage):
         )
 
 
-for name in ["torch", "torchvision", "torchaudio"]:
+# FIXME: check whether all of these are hosted on all channels
+for name in {
+    "torch",
+    "torch_model_archiver",
+    "torch_tb_profiler",
+    "torcharrow",
+    "torchaudio",
+    "torchcsprng",
+    "torchdistx",
+    "torchserve",
+    "torchtext",
+    "torchvision",
+}:
     PatchedPackages._register(name)(_PatchedPyTorchPackage)
 
 

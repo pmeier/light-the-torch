@@ -1,7 +1,6 @@
 import contextlib
 import dataclasses
 import functools
-import itertools
 import optparse
 import os
 import sys
@@ -16,21 +15,6 @@ import light_the_torch as ltt
 from . import _cb as cb
 from ._packages import Channel, PatchedPackages
 from ._utils import apply_fn_patch
-
-
-PYTORCH_DISTRIBUTIONS = {
-    "torch",
-    "torch_model_archiver",
-    "torch_tb_profiler",
-    "torcharrow",
-    "torchaudio",
-    "torchcsprng",
-    "torchdata",
-    "torchdistx",
-    "torchserve",
-    "torchtext",
-    "torchvision",
-}
 
 
 def patch(pip_main):
@@ -202,26 +186,6 @@ def patch_cli_options():
             yield
 
 
-def get_extra_index_urls(computation_backends, channel):
-    if channel == Channel.STABLE:
-        channel_paths = [""]
-    elif channel == Channel.LTS:
-        channel_paths = [
-            f"lts/{major}.{minor}/"
-            for major, minor in [
-                (1, 8),
-            ]
-        ]
-    else:
-        channel_paths = [f"{channel.name.lower()}/"]
-    return [
-        f"https://download.pytorch.org/whl/{channel_path}{backend}"
-        for channel_path, backend in itertools.product(
-            channel_paths, sorted(computation_backends)
-        )
-    ]
-
-
 @contextlib.contextmanager
 def patch_link_collection(packages):
     @contextlib.contextmanager
@@ -264,17 +228,18 @@ def patch_candidate_selection(packages):
     vanilla_sort_key = CandidateEvaluator._sort_key
 
     def patched_sort_key(candidate_evaluator, candidate):
-        # At this stage all candidates have the same name. Thus, we don't need to
-        # mirror the exact key structure that the vanilla sort keys have.
         package = packages.get(candidate.name)
-        if not package:
-            return vanilla_sort_key(candidate_evaluator, candidate)
-
+        assert package
         return package.make_sort_key(candidate)
 
     @contextlib.contextmanager
     def context(input):
-        # TODO: refactor this to early return here
+        # At this stage all candidates have the same name. Thus, we don't need to
+        # mirror the exact key structure that the vanilla sort keys have.
+        if not input.candidates or input.candidates[0].name not in packages:
+            yield
+            return
+
         with unittest.mock.patch.object(
             CandidateEvaluator, "_sort_key", new=patched_sort_key
         ):
