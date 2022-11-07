@@ -67,8 +67,8 @@ jobs:
 
       - uses: JasonEtco/create-an-issue@v2.6.0
         if:
-          failure() && github.event_name == 'schedule' && steps.tests.outcome ==
-          'success' && matrix.release == 'stable'
+          github.event_name == 'schedule' && steps.tests.outcome == 'success' &&
+          matrix.release == 'stable'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
