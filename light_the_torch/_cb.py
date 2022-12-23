@@ -150,6 +150,7 @@ def _detect_nvidia_driver_version() -> Optional[Version]:
 # Table 3 from https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html
 _MINIMUM_DRIVER_VERSIONS = {
     "Linux": {
+        Version("11.8"): Version("520.61.05"),
         Version("11.7"): Version("515.48.07"),
         Version("11.6"): Version("510.47.03"),
         Version("11.5"): Version("495.29.05"),
@@ -167,6 +168,7 @@ _MINIMUM_DRIVER_VERSIONS = {
         Version("8.0"): Version("375.26"),
     },
     "Windows": {
+        Version("11.8"): Version("520.06"),
         Version("11.7"): Version("516.31"),
         Version("11.6"): Version("511.65"),
         Version("11.5"): Version("496.13"),
