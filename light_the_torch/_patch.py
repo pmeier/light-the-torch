@@ -1,54 +1,20 @@
 import contextlib
 import dataclasses
-import enum
 import functools
-import itertools
 import optparse
 import os
-import re
 import sys
 import unittest.mock
 from typing import List, Set
 from unittest import mock
 
 import pip._internal.cli.cmdoptions
-
-from pip._internal.index.collector import CollectedSources
 from pip._internal.index.package_finder import CandidateEvaluator
-from pip._internal.index.sources import build_source
-from pip._internal.models.search_scope import SearchScope
 
 import light_the_torch as ltt
-
 from . import _cb as cb
-
+from ._packages import Channel, PatchedPackages
 from ._utils import apply_fn_patch
-
-
-class Channel(enum.Enum):
-    STABLE = enum.auto()
-    TEST = enum.auto()
-    NIGHTLY = enum.auto()
-    LTS = enum.auto()
-
-    @classmethod
-    def from_str(cls, string):
-        return cls[string.upper()]
-
-
-PYTORCH_DISTRIBUTIONS = {
-    "torch",
-    "torch_model_archiver",
-    "torch_tb_profiler",
-    "torcharrow",
-    "torchaudio",
-    "torchcsprng",
-    "torchdata",
-    "torchdistx",
-    "torchserve",
-    "torchtext",
-    "torchvision",
-}
 
 
 def patch(pip_main):
@@ -168,11 +134,13 @@ class LttOptions:
 def apply_patches(argv):
     options = LttOptions.from_pip_argv(argv)
 
+    packages = PatchedPackages(options)
+
     patches = [
         patch_cli_version(),
         patch_cli_options(),
-        patch_link_collection(options.computation_backends, options.channel),
-        patch_candidate_selection(options.computation_backends),
+        patch_link_collection(packages),
+        patch_candidate_selection(packages),
     ]
 
     with contextlib.ExitStack() as stack:
@@ -218,77 +186,17 @@ def patch_cli_options():
             yield
 
 
-def get_extra_index_urls(computation_backends, channel):
-    if channel == Channel.STABLE:
-        channel_paths = [""]
-    elif channel == Channel.LTS:
-        channel_paths = [
-            f"lts/{major}.{minor}/"
-            for major, minor in [
-                (1, 8),
-            ]
-        ]
-    else:
-        channel_paths = [f"{channel.name.lower()}/"]
-    return [
-        f"https://download.pytorch.org/whl/{channel_path}{backend}"
-        for channel_path, backend in itertools.product(
-            channel_paths, sorted(computation_backends)
-        )
-    ]
-
-
 @contextlib.contextmanager
-def patch_link_collection(computation_backends, channel):
-    search_scope = SearchScope(
-        find_links=[],
-        index_urls=get_extra_index_urls(computation_backends, channel),
-        no_index=False,
-    )
-
+def patch_link_collection(packages):
     @contextlib.contextmanager
     def context(input):
-        if input.project_name not in PYTORCH_DISTRIBUTIONS:
+        package = packages.get(input.project_name)
+        if not package:
             yield
             return
 
-        with mock.patch.object(input.self, "search_scope", search_scope):
+        with mock.patch.object(input.self, "search_scope", package.make_search_scope()):
             yield
-
-    def postprocessing(input, output):
-        if input.project_name not in PYTORCH_DISTRIBUTIONS:
-            return output
-
-        if channel != Channel.STABLE:
-            return output
-
-        # Some stable binaries are not hosted on the PyTorch indices. We check if this
-        # is the case for the current distribution.
-        for remote_file_source in output.index_urls:
-            candidates = list(remote_file_source.page_candidates())
-
-            # Cache the candidates, so `pip` doesn't has to retrieve them again later.
-            remote_file_source.page_candidates = lambda: iter(candidates)
-
-            # If there are any candidates on the PyTorch indices, we continue normally.
-            if candidates:
-                return output
-
-        # In case the distribution is not present on the PyTorch indices, we fall back
-        # to PyPI.
-        _, pypi_file_source = build_source(
-            SearchScope(
-                find_links=[],
-                index_urls=["https://pypi.org/simple"],
-                no_index=False,
-            ).get_index_urls_locations(input.project_name)[0],
-            candidates_from_page=input.candidates_from_page,
-            page_validator=input.self.session.is_secure_origin,
-            expand_dir=False,
-            cache_link_parsing=False,
-        )
-
-        return CollectedSources(find_links=[], index_urls=[pypi_file_source])
 
     with apply_fn_patch(
         "pip",
@@ -298,67 +206,44 @@ def patch_link_collection(computation_backends, channel):
         "LinkCollector",
         "collect_sources",
         context=context,
-        postprocessing=postprocessing,
     ):
         yield
 
 
 @contextlib.contextmanager
-def patch_candidate_selection(computation_backends):
-    computation_backend_pattern = re.compile(
-        r"/(?P<computation_backend>(cpu|cu\d+|rocm([\d.]+)))/"
-    )
-
-    def extract_local_specifier(candidate):
-        local = candidate.version.local
-
-        if local is None:
-            match = computation_backend_pattern.search(candidate.link.path)
-            local = match["computation_backend"] if match else "any"
-
-        # Early PyTorch distributions used the "any" local specifier to indicate a
-        # pure Python binary. This was changed to no local specifier later.
-        # Setting this to "cpu" is technically not correct as it will exclude this
-        # binary if a non-CPU backend is requested. Still, this is probably the
-        # right thing to do, since the user requested a specific backend and
-        # although this binary will work with it, it was not compiled against it.
-        if local == "any":
-            local = "cpu"
-
-        return local
-
+def patch_candidate_selection(packages):
     def preprocessing(input):
         if not input.candidates:
             return
 
-        candidates = iter(input.candidates)
-        candidate = next(candidates)
-
-        if candidate.name not in PYTORCH_DISTRIBUTIONS:
-            # At this stage all candidates have the same name. Thus, if the first is
-            # not a PyTorch distribution, we don't need to check the rest and can
-            # return without changes.
+        # At this stage all candidates have the same name. Thus, if the first is
+        # not a PyTorch distribution, we don't need to check the rest and can
+        # return without changes.
+        package = packages.get(input.candidates[0].name)
+        if not package:
             return
 
-        input.candidates = [
-            candidate
-            for candidate in itertools.chain([candidate], candidates)
-            if extract_local_specifier(candidate) in computation_backends
-        ]
+        input.candidates = list(package.filter_candidates(input.candidates))
 
     vanilla_sort_key = CandidateEvaluator._sort_key
 
     def patched_sort_key(candidate_evaluator, candidate):
+        package = packages.get(candidate.name)
+        assert package
+        return package.make_sort_key(candidate)
+
+    @contextlib.contextmanager
+    def context(input):
         # At this stage all candidates have the same name. Thus, we don't need to
         # mirror the exact key structure that the vanilla sort keys have.
-        return (
-            vanilla_sort_key(candidate_evaluator, candidate)
-            if candidate.name not in PYTORCH_DISTRIBUTIONS
-            else (
-                cb.ComputationBackend.from_str(extract_local_specifier(candidate)),
-                candidate.version.base_version,
-            )
-        )
+        if not input.candidates or input.candidates[0].name not in packages:
+            yield
+            return
+
+        with unittest.mock.patch.object(
+            CandidateEvaluator, "_sort_key", new=patched_sort_key
+        ):
+            yield
 
     with apply_fn_patch(
         "pip",
@@ -368,8 +253,6 @@ def patch_candidate_selection(computation_backends):
         "CandidateEvaluator",
         "get_applicable_candidates",
         preprocessing=preprocessing,
+        context=context,
     ):
-        with unittest.mock.patch.object(
-            CandidateEvaluator, "_sort_key", new=patched_sort_key
-        ):
-            yield
+        yield
