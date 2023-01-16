@@ -147,19 +147,24 @@ def _detect_nvidia_driver_version() -> Optional[Version]:
         return None
 
 
-# Table 3 from https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html
 _MINIMUM_DRIVER_VERSIONS = {
     "Linux": {
+        # Table 2 from
+        # https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html
         Version("12.0"): Version("525.60.13"),
-        Version("11.8"): Version("520.61.05"),
-        Version("11.7"): Version("515.48.07"),
-        Version("11.6"): Version("510.47.03"),
-        Version("11.5"): Version("495.29.05"),
-        Version("11.4"): Version("470.82.01"),
-        Version("11.3"): Version("465.19.01"),
-        Version("11.2"): Version("460.32.03"),
-        Version("11.1"): Version("455.32"),
-        Version("11.0"): Version("450.51.06"),
+        # Table 2 from
+        # https://docs.nvidia.com/cuda/archive/11.8.0/cuda-toolkit-release-notes/index.html
+        Version("11.8"): Version("450.80.02"),
+        Version("11.7"): Version("450.80.02"),
+        Version("11.6"): Version("450.80.02"),
+        Version("11.5"): Version("450.80.02"),
+        Version("11.4"): Version("450.80.02"),
+        Version("11.3"): Version("450.80.02"),
+        Version("11.2"): Version("450.80.02"),
+        Version("11.1"): Version("450.80.02"),
+        Version("11.0"): Version("450.36.06"),
+        # Table 1 from
+        # https://docs.nvidia.com/cuda/archive/10.2/cuda-toolkit-release-notes/index.html
         Version("10.2"): Version("440.33"),
         Version("10.1"): Version("418.39"),
         Version("10.0"): Version("410.48"),
@@ -169,16 +174,22 @@ _MINIMUM_DRIVER_VERSIONS = {
         Version("8.0"): Version("375.26"),
     },
     "Windows": {
+        # Table 2 from
+        # https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html
         Version("12.0"): Version("527.41"),
-        Version("11.8"): Version("520.06"),
-        Version("11.7"): Version("516.31"),
-        Version("11.6"): Version("511.65"),
-        Version("11.5"): Version("496.13"),
-        Version("11.4"): Version("472.50"),
-        Version("11.3"): Version("465.89"),
-        Version("11.2"): Version("461.33"),
-        Version("11.1"): Version("456.81"),
-        Version("11.0"): Version("451.82"),
+        # Table 2 from
+        # https://docs.nvidia.com/cuda/archive/11.8.0/cuda-toolkit-release-notes/index.html
+        Version("11.8"): Version("452.39"),
+        Version("11.7"): Version("452.39"),
+        Version("11.6"): Version("452.39"),
+        Version("11.5"): Version("452.39"),
+        Version("11.4"): Version("452.39"),
+        Version("11.3"): Version("452.39"),
+        Version("11.2"): Version("452.39"),
+        Version("11.1"): Version("452.39"),
+        Version("11.0"): Version("451.22"),
+        # Table 1 from
+        # https://docs.nvidia.com/cuda/archive/10.2/cuda-toolkit-release-notes/index.html
         Version("10.2"): Version("441.22"),
         Version("10.1"): Version("418.96"),
         Version("10.0"): Version("411.31"),
