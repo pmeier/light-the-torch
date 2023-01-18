@@ -1,0 +1,26 @@
+name: create-issue
+description: "Create an issue from a template"
+
+inputs:
+  filename:
+    description: Path to issue template. Usually in .github/issue-templates
+    required: true
+
+runs:
+  using: composite
+
+  steps:
+    - name: Debug
+      shell: bash
+      run: echo ${{ toJson(env) }} | jq
+
+    - name: Render template
+      shell: bash
+      run:
+        python .github/actions/check_template/render_template.py ${{ inputs.filename }}
+
+    - uses: JasonEtco/create-an-issue@v2.6.0
+      if: github.event_name == 'schedule'
+      with:
+        filename: ${{ inputs.filename }}
+        update_existing: false
