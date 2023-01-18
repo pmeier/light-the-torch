@@ -6,9 +6,14 @@ import tqdm
 from bs4 import BeautifulSoup
 
 from light_the_torch._cb import _MINIMUM_DRIVER_VERSIONS, CPUBackend, CUDABackend
-from light_the_torch._patch import Channel, get_extra_index_urls, PYTORCH_DISTRIBUTIONS
+from light_the_torch._patch import (
+    Channel,
+    get_extra_index_urls,
+    PYTORCH_DISTRIBUTIONS,
+    THIRD_PARTY_PACKAGES,
+)
 
-EXCLUDED_PYTORCH_DIST = {
+EXCLUDED_PYTORCH_PACKAGES = {
     "nestedtensor",
     "pytorch_csprng",
     "pytorch-triton",
@@ -24,23 +29,7 @@ EXCLUDED_PYTORCH_DIST = {
     "torchrec_nightly_cpu",
     "torchtriton",
 }
-EXCLUDED_THIRD_PARTY_PACKAGES = {
-    "Pillow",
-    "certifi",
-    "charset-normalizer",
-    "cmake",
-    "filelock",
-    "idna",
-    "mpmath",
-    "networkx",
-    "numpy",
-    "packaging",
-    "requests",
-    "sympy",
-    "typing-extensions",
-    "urllib3",
-}
-PATCHED_PYTORCH_DISTS = set(PYTORCH_DISTRIBUTIONS)
+HANDLED_PACKAGES = PYTORCH_DISTRIBUTIONS | THIRD_PARTY_PACKAGES
 
 COMPUTATION_BACKENDS = {
     CUDABackend(cuda_version.major, cuda_version.minor)
@@ -69,13 +58,13 @@ def main():
         soup = BeautifulSoup(response.text, features="html.parser")
 
         available.update(tag.string for tag in soup.find_all(name="a"))
-    available = available - (EXCLUDED_PYTORCH_DIST | EXCLUDED_THIRD_PARTY_PACKAGES)
+    available = available - EXCLUDED_PYTORCH_PACKAGES
 
     print(
         json.dumps(
             dict(
-                missing=sorted(available - PATCHED_PYTORCH_DISTS),
-                extra=sorted(PATCHED_PYTORCH_DISTS - available),
+                missing=sorted(available - HANDLED_PACKAGES),
+                extra=sorted(HANDLED_PACKAGES - available),
             )
         )
     )

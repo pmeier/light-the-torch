@@ -50,6 +50,23 @@ PYTORCH_DISTRIBUTIONS = {
     "torchvision",
 }
 
+THIRD_PARTY_PACKAGES = {
+    "Pillow",
+    "certifi",
+    "charset-normalizer",
+    "cmake",
+    "filelock",
+    "idna",
+    "mpmath",
+    "networkx",
+    "numpy",
+    "packaging",
+    "requests",
+    "sympy",
+    "typing-extensions",
+    "urllib3",
+}
+
 
 def patch(pip_main):
     @functools.wraps(pip_main)
@@ -171,7 +188,9 @@ def apply_patches(argv):
     patches = [
         patch_cli_version(),
         patch_cli_options(),
-        patch_link_collection(options.computation_backends, options.channel),
+        patch_link_collection_with_supply_chain_attack_mitigation(
+            options.computation_backends, options.channel
+        ),
         patch_candidate_selection(options.computation_backends),
     ]
 
@@ -239,7 +258,43 @@ def get_extra_index_urls(computation_backends, channel):
 
 
 @contextlib.contextmanager
-def patch_link_collection(computation_backends, channel):
+def patch_link_collection_with_supply_chain_attack_mitigation(
+    computations_backends, channel
+):
+    @contextlib.contextmanager
+    def context(input):
+        with patch_link_collection(
+            computations_backends,
+            channel,
+            {
+                requirement.name
+                for requirement in input.root_reqs
+                if requirement.user_supplied
+                and not requirement.is_pinned
+                and requirement.name in THIRD_PARTY_PACKAGES
+            }
+            if channel == Channel.NIGHTLY
+            else set(),
+        ):
+            yield
+
+    with apply_fn_patch(
+        "pip",
+        "_internal",
+        "resolution",
+        "resolvelib",
+        "resolver",
+        "Resolver",
+        "resolve",
+        context=context,
+    ):
+        yield
+
+
+@contextlib.contextmanager
+def patch_link_collection(
+    computation_backends, channel, user_supplied_third_party_packages
+):
     search_scope = SearchScope(
         find_links=[],
         index_urls=get_extra_index_urls(computation_backends, channel),
@@ -248,7 +303,13 @@ def patch_link_collection(computation_backends, channel):
 
     @contextlib.contextmanager
     def context(input):
-        if input.project_name not in PYTORCH_DISTRIBUTIONS:
+        if not (
+            input.project_name in PYTORCH_DISTRIBUTIONS
+            or (
+                channel == Channel.NIGHTLY
+                and input.project_name not in user_supplied_third_party_packages
+            )
+        ):
             yield
             return
 
