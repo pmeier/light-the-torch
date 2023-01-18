@@ -16,6 +16,7 @@ runs:
 
     - name: Render template
       shell: bash
+      env: ${{ fromJson(env) }}
       run:
         python .github/actions/check_template/render_template.py ${{ inputs.filename }}
 
