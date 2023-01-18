@@ -11,18 +11,34 @@ from light_the_torch._patch import Channel, get_extra_index_urls, PYTORCH_DISTRI
 EXCLUDED_PYTORCH_DIST = {
     "nestedtensor",
     "pytorch_csprng",
-    "pytorch_triton",
-    "torch_cuda80",
-    "torch_nightly",
+    "pytorch-triton",
+    "torch-cuda80",
+    "torch-nightly",
     "torchaudio_nightly",
     "torchrec",
-    "torchrec_cpu",
+    "torchrec-cpu",
     "torchrec_nightly",
     "torchrec_nightly_3.7_cu11.whl",
     "torchrec_nightly_3.8_cu11.whl",
     "torchrec_nightly_3.9_cu11.whl",
     "torchrec_nightly_cpu",
     "torchtriton",
+}
+EXCLUDED_THIRD_PARTY_PACKAGES = {
+    "Pillow",
+    "certifi",
+    "charset-normalizer",
+    "cmake",
+    "filelock",
+    "idna",
+    "mpmath",
+    "networkx",
+    "numpy",
+    "packaging",
+    "requests",
+    "sympy",
+    "typing-extensions",
+    "urllib3",
 }
 PATCHED_PYTORCH_DISTS = set(PYTORCH_DISTRIBUTIONS)
 
@@ -53,7 +69,7 @@ def main():
         soup = BeautifulSoup(response.text, features="html.parser")
 
         available.update(tag.string for tag in soup.find_all(name="a"))
-    available = available - EXCLUDED_PYTORCH_DIST
+    available = available - (EXCLUDED_PYTORCH_DIST | EXCLUDED_THIRD_PARTY_PACKAGES)
 
     print(
         json.dumps(
