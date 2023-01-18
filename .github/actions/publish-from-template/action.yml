@@ -12,7 +12,7 @@ runs:
   steps:
     - name: Debug
       shell: bash
-      run: echo ${{ toJson(env) }} | jq
+      run: echo "${{ toJson(env) }}" | jq
 
     - name: Render template
       shell: bash
