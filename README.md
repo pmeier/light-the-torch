@@ -149,7 +149,8 @@ specific tasks.
 ## Is it safe?
 
 A project as large as PyTorch is attractive for malicious actors given the large user
-base. For example in December 2022, PyTorch was hit by a [supply chain attack]() that
+base. For example in December 2022, PyTorch was hit by a
+[supply chain attack](https://pytorch.org/blog/compromised-nightly-dependency/) that
 potentially extracted user information. The PyTorch team mitigated the attack as soon as
 it was detected by temporarily hosting all third party dependencies for the nightly
 releases on their own indices. With that,
