@@ -18,7 +18,8 @@ runs:
       shell: bash
       env: ${{ env }}
       run:
-        python .github/actions/check_template/render_template.py ${{ inputs.filename }}
+        python .github/actions/publish-from-template/render_template.py ${{
+        inputs.filename }}
 
     - uses: JasonEtco/create-an-issue@v2.6.0
       if: github.event_name == 'schedule'
