@@ -1,0 +1,25 @@
+name: publish-from-template
+description: "Publish information from a template"
+
+inputs:
+  filename:
+    description: Path to issue template. Usually in .github/issue-templates
+    required: true
+
+runs:
+  using: composite
+
+  steps:
+    - name: Render template
+      shell: bash
+      env: ${{ env }}
+      run:
+        python .github/actions/publish-from-template/render_template.py ${{
+        inputs.filename }}
+
+    - uses: JasonEtco/create-an-issue@v2.6.0
+      if: github.event_name == 'schedule'
+      env: ${{ env }}
+      with:
+        filename: ${{ inputs.filename }}
+        update_existing: false

@@ -1,8 +1,8 @@
-#!/usr/bin/env python
-
 import itertools
+import json
 
 import requests
+import tqdm
 from bs4 import BeautifulSoup
 
 from light_the_torch._cb import _MINIMUM_DRIVER_VERSIONS, CPUBackend, CUDABackend
@@ -33,16 +33,19 @@ COMPUTATION_BACKENDS = {
 }
 COMPUTATION_BACKENDS.add(CPUBackend())
 
-EXTRA_INDEX_URLS = set(
-    itertools.chain.from_iterable(
-        get_extra_index_urls(COMPUTATION_BACKENDS, channel) for channel in iter(Channel)
+EXTRA_INDEX_URLS = sorted(
+    set(
+        itertools.chain.from_iterable(
+            get_extra_index_urls(COMPUTATION_BACKENDS, channel)
+            for channel in iter(Channel)
+        )
     )
 )
 
 
 def main():
     available = set()
-    for url in EXTRA_INDEX_URLS:
+    for url in tqdm.tqdm(EXTRA_INDEX_URLS):
         response = requests.get(url)
         if not response.ok:
             continue
@@ -52,11 +55,14 @@ def main():
         available.update(tag.string for tag in soup.find_all(name="a"))
     available = available - EXCLUDED_PYTORCH_DIST
 
-    missing = available - PATCHED_PYTORCH_DISTS
-    extra = PATCHED_PYTORCH_DISTS - available
-
-    if missing or extra:
-        print(",".join(sorted(available)))
+    print(
+        json.dumps(
+            dict(
+                missing=sorted(available - PATCHED_PYTORCH_DISTS),
+                extra=sorted(PATCHED_PYTORCH_DISTS - available),
+            )
+        )
+    )
 
 
 if __name__ == "__main__":
