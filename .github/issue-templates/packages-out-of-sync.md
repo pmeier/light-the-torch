@@ -2,7 +2,7 @@
 title: `light-the-torch` is out of sync with the PyTorch package indices
 assignees: pmeier
 ---
-{%- if env.MISSING|length %} 
+{%- if env.MISSING|length %}
 The following packages are available, but not patched:
 {% for package in env.MISSING.split(",") %}
   - `{{ package }}`
