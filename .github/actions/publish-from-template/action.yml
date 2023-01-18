@@ -23,6 +23,7 @@ runs:
 
     - uses: JasonEtco/create-an-issue@v2.6.0
       if: github.event_name == 'schedule'
+      env: ${{ env }}
       with:
         filename: ${{ inputs.filename }}
         update_existing: false
