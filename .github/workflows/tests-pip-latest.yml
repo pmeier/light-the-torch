@@ -55,7 +55,8 @@ jobs:
         run: doit test
 
       - if: failure() && steps.tests.outcome == 'failure'
-        uses: ./github/actions/create-issue
+        name: Publish information from template
+        uses: .github/actions/publish-from-template
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
@@ -65,7 +66,8 @@ jobs:
           filename: .github/issue-templates/pip-latest-failure.md
 
       - if: steps.tests.outcome == 'success' && matrix.release == 'stable'
-        uses: ./github/actions/create-issue
+        name: Publish information from template
+        uses: .github/actions/publish-from-template
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}

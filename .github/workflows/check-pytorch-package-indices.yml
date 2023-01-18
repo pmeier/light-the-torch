@@ -26,7 +26,7 @@ jobs:
       - name: Check available packages on PyTorch indices
         id: packages
         run: |
-          OUT=$(python scripts/check_available_pytorch_dists.py)
+          OUT=$(python scripts/check_pytorch_package_indices.py)
           echo $OUT | jq
 
           MISSING=$(echo $OUT | jq -r '.missing | join(",")')
@@ -38,7 +38,8 @@ jobs:
           [ -z "${MISSING}${EXTRA}" ];
 
       - if: failure()
-        uses: ./github/actions/create-issue
+        name: Publish information from template
+        uses: .github/actions/publish-from-template
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MISSING: ${{ steps.packages.outputs.missing }}

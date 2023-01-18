@@ -1,5 +1,5 @@
-name: create-issue
-description: "Create an issue from a template"
+name: publish-from-template
+description: "Publish information from a template"
 
 inputs:
   filename:
