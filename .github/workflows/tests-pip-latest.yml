@@ -56,7 +56,7 @@ jobs:
 
       - if: failure() && steps.tests.outcome == 'failure'
         name: Publish information from template
-        uses: .github/actions/publish-from-template
+        uses: ./.github/actions/publish-from-template
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
@@ -67,7 +67,7 @@ jobs:
 
       - if: steps.tests.outcome == 'success' && matrix.release == 'stable'
         name: Publish information from template
-        uses: .github/actions/publish-from-template
+        uses: ./.github/actions/publish-from-template
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}

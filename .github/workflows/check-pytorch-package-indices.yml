@@ -39,7 +39,7 @@ jobs:
 
       - if: failure()
         name: Publish information from template
-        uses: .github/actions/publish-from-template
+        uses: ./.github/actions/publish-from-template
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MISSING: ${{ steps.packages.outputs.missing }}
