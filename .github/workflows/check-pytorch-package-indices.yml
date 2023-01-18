@@ -27,7 +27,6 @@ jobs:
         id: packages
         run: |
           OUT=$(python scripts/check_pytorch_package_indices.py)
-          echo $OUT | jq
 
           MISSING=$(echo $OUT | jq -r '.missing | join(",")')
           echo "missing=${MISSING}" >> $GITHUB_OUTPUT
