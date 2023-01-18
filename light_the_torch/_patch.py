@@ -38,8 +38,8 @@ class Channel(enum.Enum):
 
 PYTORCH_DISTRIBUTIONS = {
     "torch",
-    "torch_model_archiver",
-    "torch_tb_profiler",
+    "torch-model-archiver",
+    "torch-tb-profiler",
     "torcharrow",
     "torchaudio",
     "torchcsprng",
