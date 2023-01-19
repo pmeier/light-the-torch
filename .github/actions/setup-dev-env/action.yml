@@ -10,7 +10,7 @@ runs:
 
   steps:
     - name: Set up python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ inputs.python-version }}
 
@@ -23,7 +23,7 @@ runs:
         echo "path=${CACHE_PATH}" >> $GITHUB_OUTPUT
 
     - name: Restore pip cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ${{ steps.get-cache-path.outputs.path }}
         key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt') }}
@@ -34,13 +34,8 @@ runs:
       shell: bash
       run: python -m pip install --upgrade pip wheel
 
-    - name: Checkout repository
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-
     - name: Install development requirements and project
       shell: bash
       run: |
-        pip install doit
+        pip install doit tomlkit
         doit install
