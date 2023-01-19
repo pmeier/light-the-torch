@@ -1,4 +1,5 @@
 doit
+tomlkit
 # format & lint
 pre-commit
 flake8 ==4.0.1

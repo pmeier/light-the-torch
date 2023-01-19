@@ -34,21 +34,11 @@ def task_install():
     """Installs all development requirements and light-the-torch in development mode"""
     yield dict(
         name="dev",
-        actions=[
-            do(
-                "python -m pip install --upgrade --upgrade-strategy=eager",
-                "-r requirements-dev.txt",
-            )
-        ],
+        actions=[do("python -m pip install --upgrade -r requirements-dev.txt")],
     )
     yield dict(
         name="project",
-        actions=[
-            do(
-                "python -m pip install --upgrade --upgrade-strategy=eager",
-                "-e .",
-            )
-        ],
+        actions=[do("python -m pip install --upgrade -e .")],
     )
 
 
