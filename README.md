@@ -54,19 +54,11 @@ While this is certainly an improvement, it still has a few downsides:
 1. You need to know what computation backend, e.g. CUDA 11.3 (`cu113`), is supported on
    your local machine. This can be quite challenging for new users and at least tedious
    for more experienced ones.
-2. Besides the stable binaries, PyTorch also offers nightly, test, and long-time support
-   (LTS) ones. To install them, you need a different `--extra-index-url` for each.
+2. Besides the stable binaries, PyTorch also offers nightly and test ones. To install
+   them, you need a different `--extra-index-url` for each.
 3. For the nightly and test channel you also need to supply the `--pre` option. Failing
    to do so, will pull the stable binary from PyPI even if the rest of the installation
    command is correct.
-4. When installing from the LTS channel, you need to pin the exact version, since `pip`
-   prefers newer releases from PyPI. Thus, it is not possible to automatically get the
-   latest LTS release.
-
-In case you only want to install PyTorch distributions, point 3. and 4. above can be
-resolved by using `--index-url` instead and completely disabling installing from PyPI.
-But of course this means it is not possible to install any package not hosted by
-PyTorch, but that depends on it.
 
 If any of these points don't sound appealing to you, and you just want to have the same
 user experience as `pip install` for PyTorch distributions, `light-the-torch` was made
@@ -115,7 +107,7 @@ In fact, `ltt` is `pip` with a few added options:
   case no CLI option for the computation backend is specified.
 
 - By default, `ltt` installs stable PyTorch binaries. To install binaries from the
-  nightly, test, or LTS channels pass the `--pytorch-channel` option:
+  nightly or test channels pass the `--pytorch-channel` option:
 
   ```shell
   ltt install --pytorch-channel=nightly torch torchvision torchaudio

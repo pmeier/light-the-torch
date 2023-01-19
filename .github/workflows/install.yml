@@ -20,12 +20,6 @@ jobs:
           - stable
           - test
           - nightly
-          - lts
-        exclude:
-          - os: macos-latest
-            pytorch-channel: lts
-          - python-version: "3.10"
-            pytorch-channel: lts
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
