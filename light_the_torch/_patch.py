@@ -28,7 +28,6 @@ class Channel(enum.Enum):
     STABLE = enum.auto()
     TEST = enum.auto()
     NIGHTLY = enum.auto()
-    LTS = enum.auto()
 
     @classmethod
     def from_str(cls, string):
@@ -130,7 +129,7 @@ class LttOptions:
             "--pytorch-channel",
             help=(
                 "Channel to download PyTorch distributions from, e.g. 'stable' , "
-                "'test', 'nightly' and 'lts'. "
+                "'test', and 'nightly'. "
                 "If not specified, defaults to 'stable' unless '--pre' is given in "
                 "which case it defaults to 'test'."
             ),
@@ -239,13 +238,6 @@ def patch_cli_options():
 def get_extra_index_urls(computation_backends, channel):
     if channel == Channel.STABLE:
         channel_paths = [""]
-    elif channel == Channel.LTS:
-        channel_paths = [
-            f"lts/{major}.{minor}/"
-            for major, minor in [
-                (1, 8),
-            ]
-        ]
     else:
         channel_paths = [f"{channel.name.lower()}/"]
     return [
