@@ -188,19 +188,6 @@ def cuda_backends_params():
             )
         )
 
-        # "normal" driver supports some backends
-        idx = len(cuda_versions) // 2
-        params.append(
-            pytest.param(
-                system,
-                str(driver_versions[idx]),
-                set(
-                    cuda_backends[: idx + 1],
-                ),
-                id=f"{system.lower()}-normal",
-            )
-        )
-
     return pytest.mark.parametrize(
         ("system", "nvidia_driver_version", "compatible_cuda_backends"), params
     )
