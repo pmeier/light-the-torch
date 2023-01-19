@@ -48,4 +48,4 @@ jobs:
           ID: ${{ github.run_id }}
           VERSION: ${{ steps.latest.outputs.version }}
         with:
-          filename: .github/issue-templates/pip-latest-failure.md
+          filename: .github/issue-templates/linux-nightly-uninstallable.md
