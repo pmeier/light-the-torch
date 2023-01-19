@@ -5,6 +5,7 @@ import functools
 import itertools
 import optparse
 import os
+import platform
 import re
 import sys
 import unittest.mock
@@ -12,7 +13,6 @@ from typing import List, Set
 from unittest import mock
 
 import pip._internal.cli.cmdoptions
-
 from pip._internal.index.collector import CollectedSources
 from pip._internal.index.package_finder import CandidateEvaluator
 from pip._internal.index.sources import build_source
@@ -21,7 +21,6 @@ from pip._internal.models.search_scope import SearchScope
 import light_the_torch as ltt
 
 from . import _cb as cb
-
 from ._utils import apply_fn_patch
 
 
@@ -48,6 +47,23 @@ PYTORCH_DISTRIBUTIONS = {
     "torchserve",
     "torchtext",
     "torchvision",
+}
+
+THIRD_PARTY_PACKAGES = {
+    "Pillow",
+    "certifi",
+    "charset-normalizer",
+    "cmake",
+    "filelock",
+    "idna",
+    "mpmath",
+    "networkx",
+    "numpy",
+    "packaging",
+    "requests",
+    "sympy",
+    "typing-extensions",
+    "urllib3",
 }
 
 
@@ -171,7 +187,9 @@ def apply_patches(argv):
     patches = [
         patch_cli_version(),
         patch_cli_options(),
-        patch_link_collection(options.computation_backends, options.channel),
+        patch_link_collection_with_supply_chain_attack_mitigation(
+            options.computation_backends, options.channel
+        ),
         patch_candidate_selection(options.computation_backends),
     ]
 
@@ -239,7 +257,41 @@ def get_extra_index_urls(computation_backends, channel):
 
 
 @contextlib.contextmanager
-def patch_link_collection(computation_backends, channel):
+def patch_link_collection_with_supply_chain_attack_mitigation(
+    computations_backends, channel
+):
+    @contextlib.contextmanager
+    def context(input):
+        with patch_link_collection(
+            computations_backends,
+            channel,
+            {
+                requirement.name
+                for requirement in input.root_reqs
+                if requirement.user_supplied
+                and not requirement.is_pinned
+                and requirement.name in THIRD_PARTY_PACKAGES
+            },
+        ):
+            yield
+
+    with apply_fn_patch(
+        "pip",
+        "_internal",
+        "resolution",
+        "resolvelib",
+        "resolver",
+        "Resolver",
+        "resolve",
+        context=context,
+    ):
+        yield
+
+
+@contextlib.contextmanager
+def patch_link_collection(
+    computation_backends, channel, user_supplied_third_party_packages
+):
     search_scope = SearchScope(
         find_links=[],
         index_urls=get_extra_index_urls(computation_backends, channel),
@@ -248,7 +300,14 @@ def patch_link_collection(computation_backends, channel):
 
     @contextlib.contextmanager
     def context(input):
-        if input.project_name not in PYTORCH_DISTRIBUTIONS:
+        if not (
+            input.project_name in PYTORCH_DISTRIBUTIONS
+            or (
+                channel == Channel.NIGHTLY
+                and platform.system() == "Linux"
+                and input.project_name not in user_supplied_third_party_packages
+            )
+        ):
             yield
             return
 
