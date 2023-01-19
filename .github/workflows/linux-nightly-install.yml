@@ -1,4 +1,4 @@
-name: tests-pip-latest
+name: linux-nightly-install
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ on:
     - cron: "0 4 * * *"
 
 jobs:
-  unit:
+  check:
     strategy:
       matrix:
         python-version:
