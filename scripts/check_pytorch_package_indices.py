@@ -1,22 +1,27 @@
-#!/usr/bin/env python
-
 import itertools
+import json
 
 import requests
+import tqdm
 from bs4 import BeautifulSoup
 
 from light_the_torch._cb import _MINIMUM_DRIVER_VERSIONS, CPUBackend, CUDABackend
-from light_the_torch._patch import Channel, get_extra_index_urls, PYTORCH_DISTRIBUTIONS
+from light_the_torch._patch import (
+    Channel,
+    get_extra_index_urls,
+    PYTORCH_DISTRIBUTIONS,
+    THIRD_PARTY_PACKAGES,
+)
 
-EXCLUDED_PYTORCH_DIST = {
+EXCLUDED_PYTORCH_PACKAGES = {
     "nestedtensor",
     "pytorch_csprng",
-    "pytorch_triton",
-    "torch_cuda80",
-    "torch_nightly",
+    "pytorch-triton",
+    "torch-cuda80",
+    "torch-nightly",
     "torchaudio_nightly",
     "torchrec",
-    "torchrec_cpu",
+    "torchrec-cpu",
     "torchrec_nightly",
     "torchrec_nightly_3.7_cu11.whl",
     "torchrec_nightly_3.8_cu11.whl",
@@ -24,7 +29,7 @@ EXCLUDED_PYTORCH_DIST = {
     "torchrec_nightly_cpu",
     "torchtriton",
 }
-PATCHED_PYTORCH_DISTS = set(PYTORCH_DISTRIBUTIONS)
+HANDLED_PACKAGES = PYTORCH_DISTRIBUTIONS | THIRD_PARTY_PACKAGES
 
 COMPUTATION_BACKENDS = {
     CUDABackend(cuda_version.major, cuda_version.minor)
@@ -33,16 +38,19 @@ COMPUTATION_BACKENDS = {
 }
 COMPUTATION_BACKENDS.add(CPUBackend())
 
-EXTRA_INDEX_URLS = set(
-    itertools.chain.from_iterable(
-        get_extra_index_urls(COMPUTATION_BACKENDS, channel) for channel in iter(Channel)
+EXTRA_INDEX_URLS = sorted(
+    set(
+        itertools.chain.from_iterable(
+            get_extra_index_urls(COMPUTATION_BACKENDS, channel)
+            for channel in iter(Channel)
+        )
     )
 )
 
 
 def main():
     available = set()
-    for url in EXTRA_INDEX_URLS:
+    for url in tqdm.tqdm(EXTRA_INDEX_URLS):
         response = requests.get(url)
         if not response.ok:
             continue
@@ -50,13 +58,16 @@ def main():
         soup = BeautifulSoup(response.text, features="html.parser")
 
         available.update(tag.string for tag in soup.find_all(name="a"))
-    available = available - EXCLUDED_PYTORCH_DIST
+    available = available - EXCLUDED_PYTORCH_PACKAGES
 
-    missing = available - PATCHED_PYTORCH_DISTS
-    extra = PATCHED_PYTORCH_DISTS - available
-
-    if missing or extra:
-        print(",".join(sorted(available)))
+    print(
+        json.dumps(
+            dict(
+                missing=sorted(available - HANDLED_PACKAGES),
+                extra=sorted(HANDLED_PACKAGES - available),
+            )
+        )
+    )
 
 
 if __name__ == "__main__":

@@ -3,7 +3,9 @@ name: tests-pip-latest
 on:
   pull_request:
     paths:
-      - ".github/workflows/tests-pip-latest.yml"
+      - .github/issue-templates/pip-latest-failure.md
+      - .github/issue-templates/pip-latest-success.md
+      - .github/workflows/tests-pip-latest.yml
 
   schedule:
     - cron: "0 4 * * *"
@@ -52,28 +54,24 @@ jobs:
         if: steps.current.outputs.version != steps.latest.outputs.version
         run: doit test
 
-      - uses: JasonEtco/create-an-issue@v2.6.0
-        if:
-          failure() && github.event_name == 'schedule' && steps.tests.outcome ==
-          'failure'
+      - if: failure() && steps.tests.outcome == 'failure'
+        name: Publish information from template
+        uses: ./.github/actions/publish-from-template
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           ID: ${{ github.run_id }}
           VERSION: ${{ steps.latest.outputs.version }}
         with:
-          filename: .github/pip_latest_failure_issue_template.md
-          update_existing: false
+          filename: .github/issue-templates/pip-latest-failure.md
 
-      - uses: JasonEtco/create-an-issue@v2.6.0
-        if:
-          github.event_name == 'schedule' && steps.tests.outcome == 'success' &&
-          matrix.release == 'stable'
+      - if: steps.tests.outcome == 'success' && matrix.release == 'stable'
+        name: Publish information from template
+        uses: ./.github/actions/publish-from-template
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           ID: ${{ github.run_id }}
           VERSION: ${{ steps.latest.outputs.version }}
         with:
-          filename: .github/pip_latest_success_issue_template.md
-          update_existing: false
+          filename: .github/issue-templates/pip-latest-success.md

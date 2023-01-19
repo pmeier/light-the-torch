@@ -34,7 +34,6 @@ def task_install():
     """Installs all development requirements and light-the-torch in development mode"""
     yield dict(
         name="dev",
-        file_dep=[HERE / "requirements-dev.txt"],
         actions=[
             do(
                 "python -m pip install --upgrade --upgrade-strategy=eager",
