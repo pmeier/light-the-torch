@@ -1,0 +1,62 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - main
+      - releases/*
+
+  pull_request:
+    paths:
+      - ".github/workflows/tests.yml"
+      - ".github/actions/setup-dev-env/**"
+      - "light_the_torch/**"
+      - "tests/**"
+      - ".coveragerc"
+      - "codecov.yml"
+      - "dodo.py"
+      - "pytest.ini"
+      - "requirements-dev.txt"
+      - "setup.cfg"
+
+  schedule:
+    - cron: "0 4 * * *"
+
+jobs:
+  unit:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+        python-version:
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.10"
+
+    runs-on: ${{ matrix.os }}
+    env:
+      OS: ${{ matrix.os }}
+      PYTHON_VERSION: ${{ matrix.python-version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup development environment
+        uses: ./.github/actions/setup-dev-env
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run unit tests
+        run: doit test
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v2.1.0
+        with:
+          flags: unit
+          env_vars: OS,PYTHON_VERSION
