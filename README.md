@@ -153,14 +153,14 @@ base. For example in December 2022, PyTorch was hit by a
 [supply chain attack](https://pytorch.org/blog/compromised-nightly-dependency/) that
 potentially extracted user information. The PyTorch team mitigated the attack as soon as
 it was detected by temporarily hosting all third party dependencies for the nightly
-releases on their own indices. With that,
+Linux releases on their own indices. With that,
 `pip install torch --extra-index-url https://download.pytorch.org/whl/cpu` wouldn't pull
 anything from PyPI and thus avoiding malicious packages placed there.
 
 However, due to `light-the-torch`'s index patching, this mitigation would have been
 completely circumvented since only PyTorch distributions would have been installed from
 the PyTorch indices. Since version `0.7.0`, `light-the-torch` will only pull third-party
-dependencies for nightly PyTorch releases from PyPI in case they are specifically
+dependencies for nightly Linux PyTorch releases from PyPI in case they are specifically
 requested and pinned. For example `ltt install --pytorch-channel=nightly torch` and
 `ltt install --pytorch-channel=nightly torch sympy` will install everything from the
 PyTorch indices. However, if you pin a third party dependency, e.g.
@@ -169,8 +169,8 @@ regardless of whether the version matches the one on the PyTorch index.
 
 In summary, `light-the-torch` is usually as safe as the regular PyTorch installation
 instructions. However, attacks on the supply chain can lead to situations where
-`light-the-torch` circumvents mitigations done by the PyTorch team. Unfortunately, it is
-not officially supported and thus also not tested by them.
+`light-the-torch` circumvents mitigations done by the PyTorch team. Unfortunately,
+`light-the-torch` is not officially supported and thus also not tested by them.
 
 ## How do I contribute?
 

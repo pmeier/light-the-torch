@@ -5,6 +5,7 @@ import functools
 import itertools
 import optparse
 import os
+import platform
 import re
 import sys
 import unittest.mock
@@ -12,7 +13,6 @@ from typing import List, Set
 from unittest import mock
 
 import pip._internal.cli.cmdoptions
-
 from pip._internal.index.collector import CollectedSources
 from pip._internal.index.package_finder import CandidateEvaluator
 from pip._internal.index.sources import build_source
@@ -21,7 +21,6 @@ from pip._internal.models.search_scope import SearchScope
 import light_the_torch as ltt
 
 from . import _cb as cb
-
 from ._utils import apply_fn_patch
 
 
@@ -272,9 +271,7 @@ def patch_link_collection_with_supply_chain_attack_mitigation(
                 if requirement.user_supplied
                 and not requirement.is_pinned
                 and requirement.name in THIRD_PARTY_PACKAGES
-            }
-            if channel == Channel.NIGHTLY
-            else set(),
+            },
         ):
             yield
 
@@ -307,6 +304,7 @@ def patch_link_collection(
             input.project_name in PYTORCH_DISTRIBUTIONS
             or (
                 channel == Channel.NIGHTLY
+                and platform.system() == "Linux"
                 and input.project_name not in user_supplied_third_party_packages
             )
         ):
