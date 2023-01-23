@@ -13,7 +13,7 @@ from pip._internal.index.package_finder import CandidateEvaluator
 
 import light_the_torch as ltt
 from . import _cb as cb
-from ._packages import Channel, PatchedPackages
+from ._packages import Channel, packages
 from ._utils import apply_fn_patch
 
 
@@ -134,13 +134,11 @@ class LttOptions:
 def apply_patches(argv):
     options = LttOptions.from_pip_argv(argv)
 
-    packages = PatchedPackages(options)
-
     patches = [
         patch_cli_version(),
         patch_cli_options(),
-        patch_link_collection(packages),
-        patch_candidate_selection(packages),
+        patch_link_collection(packages, options),
+        patch_candidate_selection(packages, options),
     ]
 
     with contextlib.ExitStack() as stack:
@@ -187,7 +185,7 @@ def patch_cli_options():
 
 
 @contextlib.contextmanager
-def patch_link_collection(packages):
+def patch_link_collection(packages, options):
     @contextlib.contextmanager
     def context(input):
         package = packages.get(input.project_name)
@@ -195,7 +193,9 @@ def patch_link_collection(packages):
             yield
             return
 
-        with mock.patch.object(input.self, "search_scope", package.make_search_scope()):
+        with mock.patch.object(
+            input.self, "search_scope", package.make_search_scope(options)
+        ):
             yield
 
     with apply_fn_patch(
@@ -211,7 +211,7 @@ def patch_link_collection(packages):
 
 
 @contextlib.contextmanager
-def patch_candidate_selection(packages):
+def patch_candidate_selection(packages, options):
     def preprocessing(input):
         if not input.candidates:
             return
@@ -223,14 +223,12 @@ def patch_candidate_selection(packages):
         if not package:
             return
 
-        input.candidates = list(package.filter_candidates(input.candidates))
-
-    vanilla_sort_key = CandidateEvaluator._sort_key
+        input.candidates = list(package.filter_candidates(input.candidates, options))
 
     def patched_sort_key(candidate_evaluator, candidate):
         package = packages.get(candidate.name)
         assert package
-        return package.make_sort_key(candidate)
+        return package.make_sort_key(candidate, options)
 
     @contextlib.contextmanager
     def context(input):

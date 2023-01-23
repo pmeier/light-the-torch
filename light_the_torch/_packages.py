@@ -1,4 +1,5 @@
 import abc
+import dataclasses
 import enum
 import itertools
 import re
@@ -7,7 +8,28 @@ from pip._internal.models.search_scope import SearchScope
 
 from . import _cb as cb
 
+__all__ = ["packages"]
 
+
+@dataclasses.dataclass
+class _Package(abc.ABC):
+    name: str
+
+    @abc.abstractmethod
+    def make_search_scope(self, options):
+        pass
+
+    @abc.abstractmethod
+    def filter_candidates(self, candidates, options):
+        pass
+
+    @abc.abstractmethod
+    def make_sort_key(self, candidate, options):
+        pass
+
+
+# FIXME: move this to cli patch
+#  create patch.cli and patch.packages
 class Channel(enum.Enum):
     STABLE = enum.auto()
     TEST = enum.auto()
@@ -19,48 +41,10 @@ class Channel(enum.Enum):
         return cls[string.upper()]
 
 
-class PatchedPackages:
-    _PATCHED_PACKAGE_CLSS_MAP = {}
-
-    @classmethod
-    def _register(cls, name):
-        def wrapper(patched_package_cls):
-            cls._PATCHED_PACKAGE_CLSS_MAP[name] = patched_package_cls
-            return patched_package_cls
-
-        return wrapper
-
-    def __init__(self, options):
-        self._options = options
-        self._patched_packages_map = {
-            name: cls(options) for name, cls in self._PATCHED_PACKAGE_CLSS_MAP.items()
-        }
-
-    def __contains__(self, name):
-        return name in self._patched_packages_map
-
-    def get(self, name):
-        return self._patched_packages_map.get(name)
+packages = {}
 
 
-class _PatchedPackage(abc.ABC):
-    def __init__(self, options):
-        self._options = options
-
-    @abc.abstractmethod
-    def make_search_scope(self):
-        pass
-
-    @abc.abstractmethod
-    def filter_candidates(self, candidates):
-        pass
-
-    @abc.abstractmethod
-    def make_sort_key(self, candidate):
-        pass
-
-
-class _PatchedPyTorchPackage(_PatchedPackage):
+class _PyTorchDistribution(_Package):
     def _get_extra_index_urls(self, computation_backends, channel):
         if channel == Channel.STABLE:
             channel_paths = [""]
@@ -80,11 +64,11 @@ class _PatchedPyTorchPackage(_PatchedPackage):
             )
         ]
 
-    def make_search_scope(self):
+    def make_search_scope(self, options):
         return SearchScope(
             find_links=[],
             index_urls=self._get_extra_index_urls(
-                self._options.computation_backends, self._options.channel
+                options.computation_backends, options.channel
             ),
             no_index=False,
         )
@@ -111,15 +95,14 @@ class _PatchedPyTorchPackage(_PatchedPackage):
 
         return local
 
-    def filter_candidates(self, candidates):
+    def filter_candidates(self, candidates, options):
         return [
             candidate
             for candidate in candidates
-            if self._extract_local_specifier(candidate)
-            in self._options.computation_backends
+            if self._extract_local_specifier(candidate) in options.computation_backends
         ]
 
-    def make_sort_key(self, candidate):
+    def make_sort_key(self, candidate, options):
         return (
             cb.ComputationBackend.from_str(self._extract_local_specifier(candidate)),
             candidate.version.base_version,
@@ -127,6 +110,8 @@ class _PatchedPyTorchPackage(_PatchedPackage):
 
 
 # FIXME: check whether all of these are hosted on all channels
+#  If not, change `_TorchData` below to a more general class
+# FIXME: check if they are valid at all
 for name in {
     "torch",
     "torch_model_archiver",
@@ -139,17 +124,16 @@ for name in {
     "torchtext",
     "torchvision",
 }:
-    PatchedPackages._register(name)(_PatchedPyTorchPackage)
+    packages[name] = _PyTorchDistribution(name)
 
 
-@PatchedPackages._register("torchdata")
-class _TorchData(_PatchedPyTorchPackage):
-    def make_search_scope(self):
-        if self._options.channel == Channel.STABLE:
+class _TorchData(_PyTorchDistribution):
+    def make_search_scope(self, options):
+        if options.channel == Channel.STABLE:
             return SearchScope(
                 find_links=[],
                 index_urls=["https://pypi.org/simple"],
                 no_index=False,
             )
 
-        return super().make_search_scope()
+        return super().make_search_scope(options)
