@@ -6,17 +6,31 @@ import itertools
 
 from unittest import mock
 
+from pip._vendor.packaging.requirements import Requirement
 
-class InternalError(RuntimeError):
-    def __init__(self) -> None:
-        # TODO: check against pip version
-        # TODO: fix wording
-        msg = (
-            "Unexpected internal pytorch-pip-shim error. If you ever encounter this "
-            "message during normal operation, please submit a bug report at "
-            "https://github.com/pmeier/pytorch-pip-shim/issues"
+from light_the_torch._compat import importlib_metadata
+
+
+class UnexpectedInternalError(Exception):
+    def __init__(self, msg) -> None:
+        actual_pip_version = Requirement(f"pip=={importlib_metadata.version('pip')}")
+        required_pip_version = next(
+            requirement
+            for requirement in (
+                Requirement(requirement_string)
+                for requirement_string in importlib_metadata.requires("light_the_torch")
+            )
+            if requirement.name == "pip"
         )
-        super().__init__(msg)
+        super().__init__(
+            f"{msg}\n\n"
+            f"This can happen when the actual pip version (`{actual_pip_version}`) "
+            f"and the one required by light-the-torch (`{required_pip_version}`) "
+            f"are out of sync.\n"
+            f"If that is the case, please reinstall light-the-torch. "
+            f"Otherwise, please submit a bug report at "
+            f"https://github.com/pmeier/light-the-torch/issues"
+        )
 
 
 class Input(dict):
@@ -77,7 +91,7 @@ def apply_fn_patch(
     postprocessing=lambda input, output: output,
 ):
     target = ".".join(parts)
-    fn = import_fn(target)
+    fn = import_obj(target)
 
     @functools.wraps(fn)
     def new(*args, **kwargs):
@@ -93,7 +107,7 @@ def apply_fn_patch(
         yield
 
 
-def import_fn(target: str):
+def import_obj(target: str):
     attrs = []
     name = target
     while name:
@@ -101,13 +115,25 @@ def import_fn(target: str):
             module = importlib.import_module(name)
             break
         except ImportError:
-            name, attr = name.rsplit(".", 1)
-            attrs.append(attr)
+            try:
+                name, attr = name.rsplit(".", 1)
+            except ValueError:
+                attr = name
+                name = ""
+            attrs.insert(0, attr)
     else:
-        raise InternalError
+        raise UnexpectedInternalError(
+            f"Tried to import `{target}`, "
+            f"but the top-level namespace `{attrs[0]}` doesn't seem to be a module."
+        )
 
     obj = module
-    for attr in attrs[::-1]:
-        obj = getattr(obj, attr)
+    for attr in attrs:
+        try:
+            obj = getattr(obj, attr)
+        except AttributeError:
+            raise UnexpectedInternalError(
+                f"Failed to access `{attr}` from `{obj.__name__}`"
+            ) from None
 
     return obj
