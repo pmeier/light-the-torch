@@ -77,7 +77,7 @@ def exits(*, should_succeed=True, expected_code=None, check_err=None, check_out=
 @pytest.fixture
 def set_argv(mocker):
     def patch(*options):
-        return mocker.patch.object(sys, "argv", ["ltt", *options])
+        return mocker.patch_pip_main.object(sys, "argv", ["ltt", *options])
 
     return patch
 

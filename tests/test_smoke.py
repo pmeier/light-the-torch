@@ -103,12 +103,12 @@ def patch_imports(
 
         return __import__(name, globals, locals, fromlist, level)
 
-    mocker.patch.object(builtins, "__import__", new=patched_import)
+    mocker.patch_pip_main.object(builtins, "__import__", new=patched_import)
 
     values = {
         name: module for name, module in sys.modules.items() if retain_condition(name)
     }
-    mocker.patch.dict(sys.modules, clear=True, values=values)
+    mocker.patch_pip_main.dict(sys.modules, clear=True, values=values)
 
 
 def test_version_not_installed(mocker):

@@ -1,12 +1,13 @@
 import abc
 import dataclasses
-import enum
 import itertools
 import re
 
 from pip._internal.models.search_scope import SearchScope
 
-from . import _cb as cb
+import light_the_torch._cb as cb
+
+from .cli import Channel
 
 __all__ = ["packages"]
 
@@ -26,18 +27,6 @@ class _Package(abc.ABC):
     @abc.abstractmethod
     def make_sort_key(self, candidate, options):
         pass
-
-
-# FIXME: move this to cli patch
-#  create patch.cli and patch.packages
-class Channel(enum.Enum):
-    STABLE = enum.auto()
-    TEST = enum.auto()
-    NIGHTLY = enum.auto()
-
-    @classmethod
-    def from_str(cls, string):
-        return cls[string.upper()]
 
 
 packages = {}

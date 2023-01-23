@@ -1,5 +1,5 @@
-from pip._internal.cli.main import main as pip_main
+from pip._internal.cli.main import main
 
-from ._patch import patch
+from ._patch import patch_pip_main
 
-main = patch(pip_main)
+main = patch_pip_main(main)

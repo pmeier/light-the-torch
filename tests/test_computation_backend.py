@@ -152,7 +152,7 @@ class TestOrdering:
 @pytest.fixture
 def patch_nvidia_driver_version(mocker):
     def factory(version):
-        return mocker.patch(
+        return mocker.patch_pip_main(
             "light_the_torch._cb.subprocess.run",
             return_value=SimpleNamespace(stdout=f"driver_version\n{version}"),
         )
@@ -208,7 +208,7 @@ def cuda_backends_params():
 
 class TestDetectCompatibleComputationBackends:
     def test_no_nvidia_driver(self, mocker):
-        mocker.patch(
+        mocker.patch_pip_main(
             "light_the_torch._cb.subprocess.run",
             side_effect=subprocess.CalledProcessError(1, ""),
         )
@@ -224,7 +224,9 @@ class TestDetectCompatibleComputationBackends:
         nvidia_driver_version,
         compatible_cuda_backends,
     ):
-        mocker.patch("light_the_torch._cb.platform.system", return_value=system)
+        mocker.patch_pip_main(
+            "light_the_torch._cb.platform.system", return_value=system
+        )
         patch_nvidia_driver_version(nvidia_driver_version)
 
         backends = cb.detect_compatible_computation_backends()
