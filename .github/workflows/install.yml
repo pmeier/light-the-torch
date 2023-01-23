@@ -75,9 +75,9 @@ jobs:
           - cu117
         exclude:
           - os: macos-latest
-            pytorch-computation-backend: cu117
+            pytorch-computation-backend: cu116
           - os: macos-latest
-            pytorch-computation-backend: cu118
+            pytorch-computation-backend: cu117
         include:
           - os: ubuntu-latest
             pytorch-computation-backend: cu102
