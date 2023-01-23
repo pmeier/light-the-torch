@@ -34,7 +34,6 @@ class Channel(enum.Enum):
     STABLE = enum.auto()
     TEST = enum.auto()
     NIGHTLY = enum.auto()
-    LTS = enum.auto()
 
     @classmethod
     def from_str(cls, string):
@@ -48,13 +47,6 @@ class _PyTorchDistribution(_Package):
     def _get_extra_index_urls(self, computation_backends, channel):
         if channel == Channel.STABLE:
             channel_paths = [""]
-        elif channel == Channel.LTS:
-            channel_paths = [
-                f"lts/{major}.{minor}/"
-                for major, minor in [
-                    (1, 8),
-                ]
-            ]
         else:
             channel_paths = [f"{channel.name.lower()}/"]
         return [
