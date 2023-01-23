@@ -71,8 +71,8 @@ jobs:
           - "3.10"
         pytorch-computation-backend:
           - cpu
+          - cu116
           - cu117
-          - cu118
         exclude:
           - os: macos-latest
             pytorch-computation-backend: cu117
