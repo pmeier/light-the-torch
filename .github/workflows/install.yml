@@ -71,19 +71,19 @@ jobs:
           - "3.10"
         pytorch-computation-backend:
           - cpu
-          - cu113
-          - cu116
+          - cu117
+          - cu118
         exclude:
           - os: macos-latest
-            pytorch-computation-backend: cu113
+            pytorch-computation-backend: cu117
           - os: macos-latest
-            pytorch-computation-backend: cu116
+            pytorch-computation-backend: cu118
         include:
           - os: ubuntu-latest
             pytorch-computation-backend: cu102
       # TODO: find a way to test this
       #          - os: ubuntu-latest
-      #            pytorch-computation-backend: rocm5.1.1
+      #            pytorch-computation-backend: rocm5.2
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
