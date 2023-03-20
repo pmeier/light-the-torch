@@ -151,7 +151,7 @@ jobs:
         run: python scripts/collect_env.py
 
       - name: Install local project with PyTorch dependency
-        run: ltt install --editable .
+        run: ltt install --editable local-project-stubs/${{ matrix.local-project-stub }}
 
       - name: Check if CPU only
         shell: python
