@@ -12,10 +12,10 @@ jobs:
           - windows-latest
           - macos-latest
         python-version:
-          - "3.7"
           - "3.8"
           - "3.9"
           - "3.10"
+          - "3.11"
         pytorch-channel:
           - stable
           - test
@@ -65,25 +65,22 @@ jobs:
           - windows-latest
           - macos-latest
         python-version:
-          - "3.7"
           - "3.8"
           - "3.9"
           - "3.10"
+          - "3.11"
         pytorch-computation-backend:
           - cpu
-          - cu113
-          - cu116
+          - cu117
+          - cu118
         exclude:
           - os: macos-latest
-            pytorch-computation-backend: cu113
+            pytorch-computation-backend: cu117
           - os: macos-latest
-            pytorch-computation-backend: cu116
-        include:
-          - os: ubuntu-latest
-            pytorch-computation-backend: cu102
+            pytorch-computation-backend: cu118
       # TODO: find a way to test this
       #          - os: ubuntu-latest
-      #            pytorch-computation-backend: rocm5.1.1
+      #            pytorch-computation-backend: rocm5.4.2
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -105,7 +102,7 @@ jobs:
       - name: Install torch
         run:
           ltt install --pytorch-computation-backend=${{
-          matrix.pytorch-computation-backend }} torch==1.12.1
+          matrix.pytorch-computation-backend }} torch==2.0.0
 
       - name: Check computation backend
         shell: python
