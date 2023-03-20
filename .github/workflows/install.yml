@@ -128,3 +128,41 @@ jobs:
               actual = CPUBackend()
 
           sys.exit(actual != expected)
+
+  local:
+    strategy:
+      matrix:
+        local-project-stub:
+          - pep517-setuptools
+      fail-fast: false
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup development environment
+        uses: ./.github/actions/setup-dev-env
+
+      - name: Collect environment information
+        run: python scripts/collect_env.py
+
+      - name: Install local project with PyTorch dependency
+        run: ltt install --editable .
+
+      - name: Check if CPU only
+        shell: python
+        run: |
+          import sys
+          import torch
+
+          cuda = torch.version.cuda
+          print(f"cuda = {cuda}")
+
+          hip = torch.version.hip
+          print(f"hip = {hip}")
+
+          sys.exit(cuda or hip)
