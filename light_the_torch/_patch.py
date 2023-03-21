@@ -252,6 +252,12 @@ def get_extra_index_urls(computation_backends, channel):
 def patch_link_collection_with_supply_chain_attack_mitigation(
     computations_backends, channel
 ):
+    def is_pinned(requirement):
+        if requirement.req is None:
+            return False
+
+        return requirement.is_pinned
+
     @contextlib.contextmanager
     def context(input):
         with patch_link_collection(
@@ -261,7 +267,7 @@ def patch_link_collection_with_supply_chain_attack_mitigation(
                 requirement.name
                 for requirement in input.root_reqs
                 if requirement.user_supplied
-                and not requirement.is_pinned
+                and not is_pinned(requirement)
                 and requirement.name in THIRD_PARTY_PACKAGES
             },
         ):
