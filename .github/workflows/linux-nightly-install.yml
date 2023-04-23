@@ -7,7 +7,7 @@ on:
       - .github/workflows/linux-nightly-install.yml
 
   schedule:
-    - cron: "0 4 * * *"
+    - cron: "40 4 * * *"
 
 jobs:
   check:
