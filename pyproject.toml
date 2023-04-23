@@ -48,6 +48,11 @@ Source = "https://github.com/pmeier/light-the-torch"
 [project.scripts]
 ltt = "light_the_torch._cli:main"
 
+[tool.setuptools.packages.find]
+include = [
+    "light_the_torch",
+]
+
 [tool.setuptools_scm]
 # See link below for available options
 # https://github.com/pypa/setuptools_scm/#configuration-parameters
