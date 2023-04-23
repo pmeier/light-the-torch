@@ -29,6 +29,8 @@ jobs:
 
       - name: Setup development environment
         uses: ./.github/actions/setup-dev-env
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: Debug
         run: pip debug -v
