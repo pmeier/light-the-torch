@@ -7,7 +7,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "light-the-torch"
+name = "light_the_torch"
 description = "Install PyTorch distributions with computation backend auto-detection"
 readme = "README.md"
 keywords = [
