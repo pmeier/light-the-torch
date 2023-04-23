@@ -30,6 +30,9 @@ jobs:
       - name: Setup development environment
         uses: ./.github/actions/setup-dev-env
 
+      - name: Debug
+        run: pip debug -v
+
       - name:
           Try installing Linux nightly binaries exclusively from PyTorch wheels indices
         run: python -m pip install -vv --pre torch torchvision torchaudio --index-url=https://download.pytorch.org/whl/nightly/cpu
