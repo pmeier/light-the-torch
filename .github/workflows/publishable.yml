@@ -19,7 +19,6 @@ on:
       - "pyproject.toml"
       - "README.rst"
       - "requirements-dev.txt"
-      - "setup.cfg"
 
 jobs:
   pypi:
