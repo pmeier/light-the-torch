@@ -1,3 +1,42 @@
+[project]
+name = "light-the-torch"
+platforms = "any"
+description = "Install PyTorch distributions with computation backend auto-detection"
+readme = "README.md"
+keywords = [
+  "pytorch",
+  "cuda",
+  "pip",
+  "install",
+]
+authors = [
+    { name = "Philip Meier", email = "github.pmeier@posteo.de" },
+]
+license = "BSD-3-Clause"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Environment :: GPU :: NVIDIA CUDA",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: System :: Installation/Setup",
+    "Topic :: Utilities",
+]
+requires-python = ">= 3.7"
+dependencies = [
+    "pip >=22.3, <23.2",
+    "importlib_metadata ; python_version < '3.8'",
+]
+
+[project.urls]
+Tracker = "https://github.com/pmeier/light-the-torch/issues"
+Source = "https://github.com/pmeier/light-the-torch"
+
 [build-system]
 requires = [
   "setuptools>=42",
@@ -5,6 +44,9 @@ requires = [
   "setuptools_scm[toml]>=3.4"
 ]
 build-backend = "setuptools.build_meta"
+
+[project.scripts]
+ltt = "light_the_torch._cli:main"
 
 [tool.setuptools_scm]
 # See link below for available options
@@ -14,35 +56,12 @@ write_to = "light_the_torch/_version.py"
 version_scheme = "release-branch-semver"
 local_scheme = "node-and-timestamp"
 
-[tool.isort]
-# See link below for available options
-# https://github.com/timothycrosley/isort/wiki/isort-Settings#full-reference-of-isort-settings
-
-skip = [
-  ".git",
-  ".venv",
-  ".eggs",
-  ".mypy_cache",
-  ".pytest_cache",
-  ".tox",
-  "__pycache__",
-  "light_the_torch/__init__.py",
-]
-line_length = 88
-use_parentheses = true
-multi_line_output = 3
-force_grid_wrap = 0
-include_trailing_comma = true
-
-known_third_party = ["pytest", "setuptools_scm", "toml"]
-known_first_party = ["light_the_torch"]
-
 [tool.black]
 # See link below for available options
 # https://github.com/psf/black#configuration-format
 
 line-length = 88
-target-version = ['py36', 'py37', 'py38']
+target-version = ['py37', 'py38', 'py39', 'py310', 'py311']
 exclude = '''
 /(
     \.git
