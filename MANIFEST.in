@@ -1,4 +1,5 @@
 recursive-exclude .github *
+recursive-exclude local-project-stubs
 recursive-exclude scripts *
 recursive-exclude tests *
 

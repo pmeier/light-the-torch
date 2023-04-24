@@ -15,9 +15,9 @@ on:
       - ".coveragerc"
       - "codecov.yml"
       - "dodo.py"
+      - "pyproject.toml"
       - "pytest.ini"
       - "requirements-dev.txt"
-      - "setup.cfg"
 
   schedule:
     - cron: "0 4 * * *"
