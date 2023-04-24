@@ -7,19 +7,18 @@ on:
       - .github/workflows/linux-nightly-install.yml
 
   schedule:
-    - cron: "0 4 * * *"
+    - cron: "40 4 * * *"
 
 jobs:
   check:
     strategy:
       matrix:
         python-version:
-          - "3.7"
           - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"
-      fail-fast: false
+      max-parallel: 1
 
     runs-on: ubuntu-latest
 
@@ -31,6 +30,8 @@ jobs:
 
       - name: Setup development environment
         uses: ./.github/actions/setup-dev-env
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name:
           Try installing Linux nightly binaries exclusively from PyTorch wheels indices
