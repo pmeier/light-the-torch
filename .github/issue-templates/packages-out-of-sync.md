@@ -1,5 +1,5 @@
 ---
-title: `light-the-torch` is out of sync with the PyTorch package indices
+title: light-the-torch is out of sync with the PyTorch package indices
 assignees: pmeier
 ---
 {%- if env.MISSING|length %}
