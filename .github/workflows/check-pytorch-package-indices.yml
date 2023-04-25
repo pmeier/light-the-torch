@@ -29,10 +29,10 @@ jobs:
           OUT=$(python scripts/check_pytorch_package_indices.py)
 
           MISSING=$(echo $OUT | jq -r '.missing | join(",")')
-          echo "missing=${MISSING}" >> $GITHUB_OUTPUT
+          echo "missing=${MISSING}" | tee -a "${GITHUB_OUTPUT}"
 
           EXTRA=$(echo $OUT | jq -r '.extra | join(",")')
-          echo "extra=${EXTRA}" >> $GITHUB_OUTPUT
+          echo "extra=${EXTRA}" | tee -a "${GITHUB_OUTPUT}"
 
           [ -z "${MISSING}${EXTRA}" ];
 

@@ -49,18 +49,24 @@ PYTORCH_DISTRIBUTIONS = {
 }
 
 THIRD_PARTY_PACKAGES = {
+    "Jinja2",
+    "MarkupSafe",
     "Pillow",
     "certifi",
     "charset-normalizer",
     "cmake",
+    "colorama",
     "filelock",
     "idna",
+    "lit",
     "mpmath",
     "networkx",
     "numpy",
     "packaging",
+    "portalocker",
     "requests",
     "sympy",
+    "tqdm",
     "typing-extensions",
     "urllib3",
 }

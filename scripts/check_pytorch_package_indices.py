@@ -17,6 +17,7 @@ EXCLUDED_PYTORCH_PACKAGES = {
     "nestedtensor",
     "pytorch_csprng",
     "pytorch-triton",
+    "pytorch-triton-rocm",
     "torch-cuda80",
     "torch-nightly",
     "torchaudio_nightly",
@@ -28,6 +29,7 @@ EXCLUDED_PYTORCH_PACKAGES = {
     "torchrec_nightly_3.9_cu11.whl",
     "torchrec_nightly_cpu",
     "torchtriton",
+    "triton",
 }
 HANDLED_PACKAGES = PYTORCH_DISTRIBUTIONS | THIRD_PARTY_PACKAGES
 
