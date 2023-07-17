@@ -36,7 +36,7 @@ classifiers = [
 ]
 requires-python = ">= 3.7"
 dependencies = [
-    "pip >=22.3, <23.2",
+    "pip >=22.3, <23.3",
     "importlib_metadata ; python_version < '3.8'",
 ]
 dynamic = ["version"]
