@@ -167,12 +167,13 @@ def cuda_backends_params():
         cuda_backends = tuple(
             cb.CUDABackend(version.major, version.minor) for version in cuda_versions
         )
+        print(driver_versions)
 
         # latest driver supports every backend
         params.append(
             pytest.param(
                 system,
-                str(driver_versions[-1]),
+                str(max(driver_versions)),
                 set(cuda_backends),
                 id=f"{system.lower()}-latest",
             )
@@ -182,7 +183,7 @@ def cuda_backends_params():
         params.append(
             pytest.param(
                 system,
-                str(driver_versions[0].major - 1),
+                str(min(driver_versions).major - 1),
                 {},
                 id=f"{system.lower()}-outdated",
             )
