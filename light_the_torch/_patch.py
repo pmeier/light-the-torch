@@ -123,9 +123,9 @@ class LttOptions:
                 "--pytorch-computation-backend",
                 help=(
                     "Computation backend for compiled PyTorch distributions, "
-                    "e.g. 'cu102', 'cu115', or 'cpu'. "
+                    "e.g. 'cu118', 'cu121', or 'cpu'. "
                     "Multiple computation backends can be passed as a comma-separated "
-                    "list, e.g 'cu102,cu113,cu116'. "
+                    "list, e.g 'cu118,cu121'. "
                     "If not specified, the computation backend is detected from the "
                     "available hardware, preferring CUDA over CPU."
                 ),
