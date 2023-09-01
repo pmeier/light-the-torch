@@ -102,7 +102,7 @@ jobs:
       - name: Install torch
         run:
           ltt install --pytorch-computation-backend=${{
-          matrix.pytorch-computation-backend }} torch==2.0.0
+          matrix.pytorch-computation-backend }} torch
 
       - name: Check computation backend
         shell: python
