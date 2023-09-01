@@ -71,13 +71,13 @@ jobs:
           - "3.11"
         pytorch-computation-backend:
           - cpu
-          - cu117
           - cu118
+          - cu121
         exclude:
           - os: macos-latest
-            pytorch-computation-backend: cu117
-          - os: macos-latest
             pytorch-computation-backend: cu118
+          - os: macos-latest
+            pytorch-computation-backend: cu121
       # TODO: find a way to test this
       #          - os: ubuntu-latest
       #            pytorch-computation-backend: rocm5.4.2
