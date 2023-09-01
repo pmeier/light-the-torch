@@ -5,7 +5,6 @@ import functools
 import itertools
 import optparse
 import os
-import platform
 import re
 import sys
 import unittest.mock
@@ -253,7 +252,7 @@ def patch_cli_options():
             yield
 
 
-def get_extra_index_urls(computation_backends, channel):
+def get_index_urls(computation_backends, channel):
     if channel == Channel.STABLE:
         channel_paths = [""]
     else:
@@ -284,9 +283,7 @@ def patch_link_collection_with_supply_chain_attack_mitigation(
             {
                 requirement.name
                 for requirement in input.root_reqs
-                if requirement.user_supplied
-                and not is_pinned(requirement)
-                and requirement.name in THIRD_PARTY_PACKAGES
+                if requirement.user_supplied and is_pinned(requirement)
             },
         ):
             yield
@@ -305,12 +302,10 @@ def patch_link_collection_with_supply_chain_attack_mitigation(
 
 
 @contextlib.contextmanager
-def patch_link_collection(
-    computation_backends, channel, user_supplied_third_party_packages
-):
+def patch_link_collection(computation_backends, channel, user_supplied_pinned_packages):
     search_scope = SearchScope(
         find_links=[],
-        index_urls=get_extra_index_urls(computation_backends, channel),
+        index_urls=get_index_urls(computation_backends, channel),
         no_index=False,
     )
 
@@ -319,9 +314,8 @@ def patch_link_collection(
         if not (
             input.project_name in PYTORCH_DISTRIBUTIONS
             or (
-                channel == Channel.NIGHTLY
-                and platform.system() == "Linux"
-                and input.project_name not in user_supplied_third_party_packages
+                input.project_name in THIRD_PARTY_PACKAGES
+                and input.project_name not in user_supplied_pinned_packages
             )
         ):
             yield

@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from light_the_torch._cb import _MINIMUM_DRIVER_VERSIONS, CPUBackend, CUDABackend
 from light_the_torch._patch import (
     Channel,
-    get_extra_index_urls,
+    get_index_urls,
     PYTORCH_DISTRIBUTIONS,
     THIRD_PARTY_PACKAGES,
 )
@@ -40,11 +40,10 @@ COMPUTATION_BACKENDS = {
 }
 COMPUTATION_BACKENDS.add(CPUBackend())
 
-EXTRA_INDEX_URLS = sorted(
+INDEX_URLS = sorted(
     set(
         itertools.chain.from_iterable(
-            get_extra_index_urls(COMPUTATION_BACKENDS, channel)
-            for channel in iter(Channel)
+            get_index_urls(COMPUTATION_BACKENDS, channel) for channel in iter(Channel)
         )
     )
 )
@@ -52,7 +51,7 @@ EXTRA_INDEX_URLS = sorted(
 
 def main():
     available = set()
-    for url in tqdm.tqdm(EXTRA_INDEX_URLS):
+    for url in tqdm.tqdm(INDEX_URLS):
         response = requests.get(url)
         if not response.ok:
             continue
