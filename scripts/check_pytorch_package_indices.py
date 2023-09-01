@@ -16,7 +16,6 @@ from light_the_torch._patch import (
 EXCLUDED_PYTORCH_PACKAGES = {
     "nestedtensor",
     "pytorch_csprng",
-    "pytorch-triton",
     "pytorch-triton-rocm",
     "torch-cuda80",
     "torch-nightly",
