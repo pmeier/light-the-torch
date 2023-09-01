@@ -46,6 +46,7 @@ PYTORCH_DISTRIBUTIONS = {
     "torchserve",
     "torchtext",
     "torchvision",
+    "pytorch-triton",
 }
 
 THIRD_PARTY_PACKAGES = {
@@ -380,15 +381,22 @@ def patch_link_collection(
 
 @contextlib.contextmanager
 def patch_candidate_selection(computation_backends):
-    computation_backend_pattern = re.compile(
+    computation_backend_link_pattern = re.compile(
         r"/(?P<computation_backend>(cpu|cu\d+|rocm([\d.]+)))/"
     )
 
     def extract_local_specifier(candidate):
         local = candidate.version.local
 
+        # Make sure that local actually is a computation backend identifier
+        if local is not None:
+            try:
+                cb.ComputationBackend.from_str(local)
+            except ValueError:
+                local = None
+
         if local is None:
-            match = computation_backend_pattern.search(candidate.link.path)
+            match = computation_backend_link_pattern.search(candidate.link.comes_from)
             local = match["computation_backend"] if match else "any"
 
         # Early PyTorch distributions used the "any" local specifier to indicate a
