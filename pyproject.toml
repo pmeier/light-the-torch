@@ -26,7 +26,6 @@ classifiers = [
     "Environment :: GPU :: NVIDIA CUDA",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: BSD License",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -34,10 +33,9 @@ classifiers = [
     "Topic :: System :: Installation/Setup",
     "Topic :: Utilities",
 ]
-requires-python = ">= 3.7"
+requires-python = ">= 3.8"
 dependencies = [
     "pip >=22.3, <23.3",
-    "importlib_metadata ; python_version < '3.8'",
 ]
 dynamic = ["version"]
 

@@ -8,7 +8,7 @@ from unittest import mock
 
 from pip._vendor.packaging.requirements import Requirement
 
-from ._compat import importlib_metadata
+import importlib.metadata as importlib_metadata
 
 
 class UnexpectedInternalError(Exception):
