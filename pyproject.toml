@@ -64,7 +64,7 @@ local_scheme = "node-and-timestamp"
 # https://github.com/psf/black#configuration-format
 
 line-length = 88
-target-version = ['py37']
+target-version = ['py38']
 exclude = '''
 /(
     \.git
