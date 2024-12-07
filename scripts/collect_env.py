@@ -83,9 +83,11 @@ def detect_pytorch_or_dependent_packages():
             name in PYTORCH_DISTRIBUTIONS
             for name in itertools.chain(
                 [dist.name],
-                [Requirement(req_str).name for req_str in dist.requires]
-                if dist.requires
-                else [],
+                (
+                    [Requirement(req_str).name for req_str in dist.requires]
+                    if dist.requires
+                    else []
+                ),
             )
         )
     }
