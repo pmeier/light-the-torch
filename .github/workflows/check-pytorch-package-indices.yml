@@ -7,6 +7,8 @@ on:
       - .github/workflows/check-available-pytorch-dists.yml
       - scripts/check_pytorch_package_indices.py
 
+  workflow_dispatch:
+
   schedule:
     - cron: "20 4 * * *"
 

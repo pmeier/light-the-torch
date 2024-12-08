@@ -20,6 +20,8 @@ on:
       - "README.rst"
       - "requirements-dev.txt"
 
+  workflow_dispatch:
+
 jobs:
   pypi:
     runs-on: ubuntu-latest

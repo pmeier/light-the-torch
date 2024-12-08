@@ -19,6 +19,8 @@ on:
       - "pytest.ini"
       - "requirements-dev.txt"
 
+  workflow_dispatch:
+
   schedule:
     - cron: "0 4 * * *"
 
