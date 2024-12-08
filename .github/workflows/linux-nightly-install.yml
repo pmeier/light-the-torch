@@ -19,6 +19,7 @@ jobs:
           - "3.9"
           - "3.10"
           - "3.11"
+          - "3.12"
       max-parallel: 1
 
     runs-on: ubuntu-latest
