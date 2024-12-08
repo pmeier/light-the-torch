@@ -14,7 +14,6 @@ jobs:
           - windows-latest
           - macos-latest
         python-version:
-          - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"
@@ -22,9 +21,6 @@ jobs:
           - stable
           - test
           - nightly
-        exclude:
-          - python-version: "3.8"
-            pytorch-channel: nightly
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
