@@ -6,6 +6,8 @@ on:
       - .github/issue-templates/linux-nightly-uninstallable.md
       - .github/workflows/linux-nightly-install.yml
 
+  workflow_dispatch:
+
   schedule:
     - cron: "40 4 * * *"
 
@@ -14,17 +16,17 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"
+          - "3.12"
       max-parallel: 1
 
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 

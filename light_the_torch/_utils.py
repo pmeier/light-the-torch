@@ -1,14 +1,14 @@
 import contextlib
 import functools
 import importlib
+
+import importlib.metadata as importlib_metadata
 import inspect
 import itertools
 
 from unittest import mock
 
 from pip._vendor.packaging.requirements import Requirement
-
-from ._compat import importlib_metadata
 
 
 class UnexpectedInternalError(Exception):
